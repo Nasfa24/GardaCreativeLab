@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GCL Curator Dashboard</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
+    <style>
+        :root { --primary: #03754c; --bg: #F5F7FA; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); margin: 0; padding: 20px; }
+        
+        /* LOGIN SCREEN */
+        #loginOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--primary); z-index: 9999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; color: white;
+        }
+        .login-box {
+            background: white; padding: 30px; border-radius: 12px;
+            width: 300px; text-align: center; color: #333;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        .login-input {
+            width: 100%; padding: 10px; margin-bottom: 10px;
+            border: 1px solid #ddd; border-radius: 8px; font-size: 1rem;
+        }
+        .login-btn {
+            width: 100%; padding: 10px; background: var(--primary); color: white;
+            border: none; border-radius: 8px; font-weight: 700; cursor: pointer;
+        }
+
+        /* DASHBOARD */
+        #dashboard { display: none; } /* Sembunyi dulu sebelum login */
+        
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .card { background: white; padding: 20px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab { padding: 10px 20px; background: #ddd; border-radius: 20px; cursor: pointer; font-size: 0.9rem; }
+        .tab.active { background: var(--primary); color: white; }
+        
+        .hidden { display: none; }
+        .btn { padding: 8px 15px; border-radius: 6px; border: none; cursor: pointer; color: white; font-weight: 600; font-size: 0.9rem; }
+        .btn-green { background: var(--primary); }
+        .btn-wa { background: #25D366; color: white; text-decoration: none; padding: 8px 15px; border-radius: 6px; display: inline-block; font-size: 0.85rem;}
+
+    </style>
+</head>
+<body>
+
+    <div id="loginOverlay">
+        <h2 style="margin-bottom: 5px;">GCL ADMIN</h2>
+        <p style="margin-bottom: 20px; opacity: 0.8;">Hanya untuk Kurator</p>
+        
+        <div class="login-box">
+            <input type="text" id="adminUser" class="login-input" placeholder="Username">
+            <input type="password" id="adminPass" class="login-input" placeholder="Password">
+            <button class="login-btn" onclick="checkLogin()">MASUK</button>
+            <p id="loginMsg" style="color:red; font-size:0.8rem; margin-top:10px;"></p>
+        </div>
+    </div>
+
+    <div id="dashboard">
+        <div class="header">
+            <h2 style="color:var(--primary);">Dashboard Kurator</h2>
+            <button onclick="location.reload()" style="background:#ddd; border:none; padding:5px 10px; border-radius:5px;">Logout</button>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('wd')">Permintaan Pencairan (WD)</div>
+            <div class="tab" onclick="switchTab('submisi')">Validasi Karya</div>
+        </div>
+
+        <div id="panel-wd">
+            <div id="wdList">Memuat...</div>
+        </div>
+
+        <div id="panel-submisi" class="hidden">
+            <div id="submisiList">Memuat...</div>
+        </div>
+    </div>
+
+    <script>
+        // --- KONFIGURASI LOGIN (GANTI DISINI MAS UUTH!) ---
+        const ADMIN_USERNAME = "admin";
+        const ADMIN_PASSWORD = "gcl2026"; // Password tetap
+
+        // --- KONFIGURASI FIREBASE ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyArd38MI6bL4EI6Q4oW-VJA_SnM0Ky35Js",
+            authDomain: "gardacreativelab.firebaseapp.com",
+            projectId: "gardacreativelab",
+            storageBucket: "gardacreativelab.firebasestorage.app",
+            messagingSenderId: "983029298298",
+            appId: "1:983029298298:web:5911967a358adb373df7c3"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // 1. FUNGSI LOGIN SEDERHANA
+        function checkLogin() {
+            const u = document.getElementById('adminUser').value;
+            const p = document.getElementById('adminPass').value;
+            
+            if(u === ADMIN_USERNAME && p === ADMIN_PASSWORD) {
+                document.getElementById('loginOverlay').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+                loadWithdrawals(); // Load data setelah login
+                loadSubmissions();
+            } else {
+                document.getElementById('loginMsg').innerText = "Username atau Password salah!";
+            }
+        }
+
+        // 2. LOAD WITHDRAWALS & WA LOGIC
+        function loadWithdrawals() {
+            db.collection("withdrawals")
+              .where("status", "in", ["pending", "transferred"])
+              .onSnapshot(snap => {
+                const div = document.getElementById("wdList");
+                div.innerHTML = "";
+                
+                if(snap.empty) { div.innerHTML = "<p>Tidak ada antrian pencairan.</p>"; return; }
+
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    
+                    // Format Nomor WA (08 -> 628)
+                    let cleanWA = d.userWa ? d.userWa.toString().replace(/\D/g,'') : '';
+                    if(cleanWA.startsWith('0')) cleanWA = '62' + cleanWA.substring(1);
+
+                    // Template Pesan WA (Sesuai Request)
+                    const pesanWA = `Halo, ${d.userName}, saya Kurator GCL. Saya mau konfirmasi bahwa Penarikan Dana dari GCL sebesar ${d.amount} Poin telah selesai dilakukan, balas pesan ini jika sudah diterima.`;
+                    const linkWA = `https://wa.me/6281339760265${cleanWA}?text=${encodeURIComponent(pesanWA)}`;
+
+                    let actionArea = "";
+                    let cardStyle = "border-left:5px solid #FFC107"; // Kuning (Pending)
+
+                    if(d.status === "pending") {
+                        // Tombol Transfer & WA Sekaligus
+                        actionArea = `
+                            <div style="margin-top:10px; padding-top:10px; border-top:1px solid #eee;">
+                                <small style="display:block; margin-bottom:5px; color:#666;">Langkah Kurator:</small>
+                                1. Transfer Manual ke Rekening di atas.<br>
+                                2. Klik tombol hijau di bawah (Otomatis buka WA).
+                                <br><br>
+                                <button class="btn btn-green" onclick="processTransfer('${doc.id}', '${linkWA}')">
+                                    <i class="fab fa-whatsapp"></i> Sudah Transfer & Chat WA
+                                </button>
+                            </div>
+                        `;
+                    } else {
+                        cardStyle = "border-left:5px solid #81C784"; // Hijau (Transferred)
+                        actionArea = `<p style="color:green; font-weight:600; font-size:0.9rem;">✅ Menunggu Konfirmasi Kreator</p>`;
+                    }
+
+                    div.innerHTML += `
+                        <div class="card" style="${cardStyle}">
+                            <div style="display:flex; justify-content:space-between;">
+                                <h3 style="color:var(--primary); margin:0;">${d.amount} Poin</h3>
+                                <small>${d.status.toUpperCase()}</small>
+                            </div>
+                            <p style="margin:5px 0;"><b>${d.userName}</b> (NIK: ${d.userNik || '-'})</p>
+                            
+                            <div style="background:#eee; padding:10px; border-radius:8px; font-size:0.9rem;">
+                                Bank: <b>${d.bankDetails}</b><br>
+                                WA: ${d.userWa}
+                            </div>
+                            
+                            ${actionArea}
+                        </div>`;
+                });
+            });
+        }
+
+        // 3. PROSES TRANSFER + BUKA WA
+        function processTransfer(docId, waLink) {
+            if(confirm("Apakah Anda sudah transfer uangnya?")) {
+                // Update Firebase
+                db.collection("withdrawals").doc(docId).update({
+                    status: "transferred",
+                    transferredAt: firebase.firestore.FieldValue.serverTimestamp()
+                }).then(() => {
+                    // Buka WhatsApp di tab baru
+                    window.open(waLink, '_blank');
+                });
+            }
+        }
+
+        // 4. LOAD SUBMISSIONS (Sederhana)
+        function loadSubmissions() {
+            db.collection("submissions").where("status", "==", "pending").onSnapshot(snap => {
+                const div = document.getElementById("submisiList");
+                div.innerHTML = "";
+                if(snap.empty) { div.innerHTML = "<p>Tidak ada karya baru.</p>"; return; }
+                
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    div.innerHTML += `
+                        <div class="card">
+                            <b>${d.userName}</b><br>
+                            <a href="${d.link}" target="_blank" style="color:blue;">Lihat Karya</a>
+                            <br><br>
+                            <button class="btn btn-green" onclick="approveKarya('${doc.id}', '${d.userId}', '${d.userName}')">Beri Nilai</button>
+                        </div>`;
+                });
+            });
+        }
+
+        function approveKarya(docId, userId, userName) {
+            const poin = prompt(`Beri Poin untuk ${userName}:`, "100");
+            if(poin) {
+                // Update status karya
+                db.collection("submissions").doc(docId).update({
+                    status: "approved", pointsAwarded: parseInt(poin)
+                });
+                // Update saldo user
+                db.collection("users").doc(userId).update({
+                    balance: firebase.firestore.FieldValue.increment(parseInt(poin))
+                });
+            }
+        }
+
+        // UTILS
+        function switchTab(tab) {
+            document.getElementById('panel-wd').classList.add('hidden');
+            document.getElementById('panel-submisi').classList.add('hidden');
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            
+            document.getElementById('panel-'+tab).classList.remove('hidden');
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>
