@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>GCL - Akademi Kreator</title>
     
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%2303754c%22/><text x=%2250%22 y=%2270%22 font-family=%22Arial, sans-serif%22 font-size=%2270%22 font-weight=%22bold%22 fill=%22white%22 text-anchor=%22middle%22>G</text></svg>">
+    
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -14,24 +16,32 @@
 
     <style>
         :root {
-            --primary: #03754c;       /* Garda Emerald */
-            --primary-dark: #025436;
-            --secondary: #FFC107;     /* Solar Yellow */
-            --accent: #00E676;        /* Cyber Mint */
-            --danger: #FF5252;
-            --bg-body: #F5F7FA;
-            --text-main: #1A233A;
-            --radius: 16px;
+            --primary: #03754c; --primary-dark: #025436; --secondary: #FFC107; 
+            --accent: #00E676; --danger: #FF5252; --bg-body: #F5F7FA; 
+            --text-main: #1A233A; --radius: 16px;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body { background-color: var(--bg-body); color: var(--text-main); padding-bottom: 100px; -webkit-tap-highlight-color: transparent; }
 
-        /* --- 1. LOGIN SCREEN --- */
+        /* LOADING SCREEN */
+        #loadingScreen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-body); z-index: 10000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .loader {
+            width: 40px; height: 40px; border: 4px solid #ddd;
+            border-top: 4px solid var(--primary); border-radius: 50%;
+            animation: spin 1s linear infinite; margin-bottom: 15px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* LOGIN SCREEN */
         #loginScreen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--primary); z-index: 9999;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: var(--primary); z-index: 9999; display: none;
+            flex-direction: column; align-items: center; justify-content: center;
             padding: 30px; text-align: center; color: white;
         }
         .login-btn {
@@ -42,10 +52,10 @@
         }
         .login-btn:active { transform: scale(0.95); }
 
-        /* --- 2. MAIN APP --- */
+        /* APP SCREEN */
         #appScreen { display: none; }
 
-        /* Header */
+        /* HEADER */
         .header {
             background-color: var(--primary); padding: 30px 20px 90px 20px;
             border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; color: white;
@@ -54,7 +64,7 @@
         .user-profile { display: flex; align-items: center; gap: 10px; cursor: pointer; }
         .user-avatar { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--secondary); object-fit: cover; }
 
-        /* Poin Card */
+        /* POIN CARD */
         .poin-card {
             background: linear-gradient(135deg, var(--primary-dark), var(--primary));
             margin: -70px 20px 20px 20px; padding: 25px; border-radius: var(--radius);
@@ -73,7 +83,7 @@
             backdrop-filter: blur(5px); cursor: pointer; border: 1px solid rgba(255,255,255,0.3);
         }
 
-        /* Content List */
+        /* CONTENT LIST */
         .content-area { padding: 0 20px; }
         .content-card {
             background: white; border-radius: var(--radius); padding: 15px; margin-bottom: 15px;
@@ -96,7 +106,7 @@
         .badge-approved { background: #E8F5E9; color: var(--primary); }
         .badge-rejected { background: #FFEBEE; color: var(--danger); }
 
-        /* FAB (Add Button) */
+        /* FAB */
         .fab {
             position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px;
             background: var(--accent); color: var(--primary-dark); border-radius: 50%;
@@ -106,7 +116,7 @@
         }
         .fab:active { transform: scale(0.9); }
 
-        /* --- 3. MODALS --- */
+        /* MODALS */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.6); z-index: 200; display: none; align-items: flex-end;
@@ -128,7 +138,7 @@
             border: none; border-radius: 12px; font-weight: 700; cursor: pointer; margin-top: 20px;
         }
 
-        /* --- 4. PROFILE MODAL SPECIFIC --- */
+        /* PROFILE MODAL */
         .profile-modal-content {
             background: #F5F7FA; width: 100%; border-radius: 25px 25px 0 0;
             padding: 0; overflow-y: auto; max-height: 90vh; position: relative; animation: slideUp 0.3s ease-out;
@@ -146,7 +156,7 @@
             display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; margin-bottom: 20px;
         }
 
-        /* --- 5. TOAST NOTIFICATION --- */
+        /* TOAST */
         .gcl-toast {
             position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px);
             background: rgba(255,255,255,0.95); backdrop-filter: blur(10px);
@@ -155,8 +165,6 @@
             z-index: 9999; transition: all 0.4s; min-width: 280px; border: 1px solid rgba(0,0,0,0.05);
         }
         .gcl-toast.active { transform: translateX(-50%) translateY(0); }
-
-        /* Notification Dot */
         .notif-dot {
             width: 10px; height: 10px; background: red; border-radius: 50%; border: 2px solid var(--primary);
             position: absolute; top: 0; right: 0; display: none;
@@ -165,6 +173,11 @@
 </head>
 <body>
 
+    <div id="loadingScreen">
+        <div class="loader"></div>
+        <p style="font-size:0.9rem; color:#666;">Memuat GCL...</p>
+    </div>
+
     <div id="loginScreen">
         <h1 style="margin-bottom:5px;">Garda Creative Lab</h1>
         <p style="opacity:0.8; font-size:0.9rem; margin-bottom:30px;">Platform Kreator Masa Depan</p>
@@ -172,6 +185,7 @@
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20">
             Masuk dengan Google
         </div>
+        <p style="font-size:0.75rem; margin-top:20px; opacity:0.7;">Jika gagal, buka di Chrome/Safari.</p>
     </div>
 
     <div id="appScreen">
@@ -219,9 +233,9 @@
             <label class="form-label">Platform</label>
             <select id="inputPlatform" class="form-input">
                 <option value="tiktok">TikTok</option>
-                <option value="instagram">Instagram Reels</option>
-                <option value="facebook">Facebook Video</option>
-                <option value="youtube">YouTube Shorts</option>
+                <option value="instagram">Instagram</option>
+                <option value="youtube">Youtube</option>
+                <option value="facebook">Facebook</option>
             </select>
 
             <label class="form-label">Link Postingan</label>
@@ -241,11 +255,11 @@
             <input type="number" id="redeemAmount" class="form-input" placeholder="Minimal 150">
             
             <div style="background:#F5F7FA; padding:10px; border-radius:8px; margin-top:10px; font-size:0.85rem;">
-                Akan ditransfer ke:<br>
+                Transfer ke:<br>
                 <b id="redeemTarget">...</b>
             </div>
 
-            <button class="btn-submit" style="background:var(--secondary); color:black;" onclick="processRedeem()">Ajukan Penarikan</button>
+            <button class="btn-submit" style="background:var(--secondary); color:black;" onclick="processRedeem()">Ajukan</button>
             <div style="text-align:center; margin-top:15px; color:#888;" onclick="toggleModal('redeemModal', false)">Batal</div>
         </div>
     </div>
@@ -258,7 +272,6 @@
                     <i class="fas fa-times" style="font-size: 1.5rem;"></i>
                 </div>
             </div>
-
             <div class="profile-info">
                 <div class="profile-name" id="profModalName">...</div>
                 <div class="profile-badge" id="badgeVerif" style="background:#eee; color:#666;">Belum Terverifikasi</div>
@@ -273,19 +286,27 @@
                     <input type="number" id="userWA" class="form-input" placeholder="Contoh: 08123456789">
                     
                     <label class="form-label">Nama Bank / E-Wallet</label>
-                    <input type="text" id="userBankName" class="form-input" placeholder="Contoh: BCA / DANA">
+                    <select id="userBankName" class="form-input">
+                        <option value="" disabled selected>Pilih Bank / E-Wallet</option>
+                        <option value="Bank Mandiri">Bank Mandiri</option>
+                        <option value="Bank BCA">Bank BCA</option>
+                        <option value="Bank BNI">Bank BNI</option>
+                        <option value="Bank BRI">Bank BRI</option>
+                        <option value="e-Wallet Dana">e-Wallet Dana</option>
+                        <option value="e-Wallet ShoppeePay">e-Wallet ShoppeePay</option>
+                    </select>
                     
                     <label class="form-label">Nomor Rekening</label>
                     <input type="number" id="userBankNum" class="form-input" placeholder="Nomor Rekening">
 
                     <button class="btn-submit" onclick="saveProfile()" style="background:var(--text-main); color:white;">
-                        <i class="fas fa-save"></i> Simpan Data Profil
+                        <i class="fas fa-save"></i> Simpan Data
                     </button>
                 </div>
 
                 <div style="margin-top:30px; border-top:1px solid #eee; padding-top:20px;">
-                    <div onclick="logout()" style="color: var(--danger); font-weight:600; cursor:pointer;">
-                        <i class="fas fa-sign-out-alt"></i> Keluar (Logout)
+                    <div onclick="logout()" style="color: var(--danger); font-weight:600; cursor:pointer; background:#FFEBEE; padding:15px; border-radius:12px;">
+                        <i class="fas fa-sign-out-alt"></i> KELUAR (LOGOUT)
                     </div>
                 </div>
             </div>
@@ -299,12 +320,7 @@
                 Kurator telah mentransfer dana penarikan Anda.<br>
                 Silakan cek rekening <b><span id="confirmBank"></span></b>.
             </p>
-            <p style="font-size:0.9rem; margin-bottom:20px;">Apakah uang sudah diterima?</p>
-            
-            <button class="btn-submit" onclick="confirmReceipt()">YA, UANG SUDAH DITERIMA</button>
-            <div style="text-align:center; margin-top:15px; font-size:0.8rem; color:#888;">
-                Klik ini untuk menyelesaikan transaksi.
-            </div>
+            <button class="btn-submit" onclick="confirmReceipt()">YA, UANG DITERIMA</button>
         </div>
     </div>
 
@@ -314,7 +330,6 @@
     </div>
 
     <script>
-        // --- KONFIGURASI FIREBASE ---
         const firebaseConfig = {
             apiKey: "AIzaSyArd38MI6bL4EI6Q4oW-VJA_SnM0Ky35Js",
             authDomain: "gardacreativelab.firebaseapp.com",
@@ -328,24 +343,22 @@
         const auth = firebase.auth();
         const provider = new firebase.auth.GoogleAuthProvider();
 
-        // --- GLOBAL VARIABLES ---
         let currentUser = null;
         let userData = {}; 
         let currentPoints = 0;
         let pendingWithdrawalId = null;
 
-        // --- AUTH & INIT ---
+        // AUTH LOGIC (REDIRECT)
         auth.onAuthStateChanged((user) => {
+            document.getElementById('loadingScreen').style.display = 'none';
             if (user) {
                 currentUser = user;
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('appScreen').style.display = 'block';
                 
-                // Set Header Info
                 document.getElementById('userName').innerText = user.displayName;
                 document.getElementById('userPhoto').src = user.photoURL;
 
-                // Load Data
                 loadUserProfile();
                 loadSubmissions();
                 checkPendingConfirmations();
@@ -355,10 +368,19 @@
             }
         });
 
-        function googleLogin() { auth.signInWithPopup(provider).catch(e => showToast(e.message)); }
-        function logout() { auth.signOut(); }
+        function googleLogin() { 
+            document.getElementById('loadingScreen').style.display = 'flex';
+            auth.signInWithRedirect(provider); 
+        }
+        
+        function logout() {
+            if(confirm("Yakin ingin keluar akun?")) {
+                document.getElementById('loadingScreen').style.display = 'flex';
+                auth.signOut().then(() => { window.location.reload(); });
+            }
+        }
 
-        // --- 1. PROFILE & POINTS SYSTEM ---
+        // PROFILE
         function loadUserProfile() {
             db.collection("users").doc(currentUser.uid).onSnapshot(doc => {
                 if(doc.exists) {
@@ -366,22 +388,21 @@
                     currentPoints = userData.balance || 0;
                     document.getElementById('displayPoints').innerText = currentPoints;
 
-                    // Isi Modal Profil
                     document.getElementById('profModalName').innerText = userData.name;
                     document.getElementById('profModalImg').src = userData.photo;
                     document.getElementById('userNIK').value = userData.nik || "";
                     document.getElementById('userWA').value = userData.whatsapp || "";
+                    
+                    // Set Bank Select Value
                     document.getElementById('userBankName').value = userData.bankName || "";
                     document.getElementById('userBankNum').value = userData.bankNumber || "";
 
-                    // Cek Verifikasi
                     if(userData.nik && userData.bankNumber) {
                         const b = document.getElementById('badgeVerif');
                         b.innerText = "Kreator Terverifikasi";
                         b.style.background = "#E3F2FD"; b.style.color = "#03754c";
                     }
                 } else {
-                    // Init User Baru
                     db.collection("users").doc(currentUser.uid).set({
                         name: currentUser.displayName,
                         email: currentUser.email,
@@ -412,7 +433,7 @@
 
         function openProfile() { toggleModal('profileModal', true); }
 
-        // --- 2. SUBMISSION SYSTEM ---
+        // SUBMISSIONS
         function loadSubmissions() {
             db.collection("submissions")
               .where("userId", "==", currentUser.uid)
@@ -426,6 +447,7 @@
                   snap.forEach(doc => {
                       const d = doc.data();
                       let icon = 'fa-link'; let bg = '#333';
+                      // Platform Icon Logic (Updated)
                       if(d.platform == 'facebook') { icon = 'fa-facebook-f'; bg = '#1877F2'; }
                       if(d.platform == 'tiktok') { icon = 'fa-tiktok'; bg = '#000'; }
                       if(d.platform == 'instagram') { icon = 'fa-instagram'; bg = 'linear-gradient(45deg, #f09433, #bc1888)'; }
@@ -435,8 +457,6 @@
                       if(d.status == 'approved') badge = `<span class="status-badge badge-approved">+${d.pointsAwarded} Poin</span>`;
                       if(d.status == 'rejected') badge = `<span class="status-badge badge-rejected">Ditolak</span>`;
 
-                      const date = d.createdAt ? new Date(d.createdAt.seconds * 1000).toLocaleDateString() : 'Baru saja';
-
                       list.innerHTML += `
                         <div class="content-card">
                             <div class="platform-icon" style="background:${bg}"><i class="fab ${icon}"></i></div>
@@ -445,7 +465,7 @@
                                 <div style="font-weight:600; font-size:0.9rem; margin-bottom:5px; color:var(--primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
                                     ${d.link}
                                 </div>
-                                <div style="font-size:0.75rem; color:#888;">${date}</div>
+                                <div style="font-size:0.75rem; color:#888;">${d.createdAt ? new Date(d.createdAt.seconds * 1000).toLocaleDateString() : 'Baru saja'}</div>
                             </div>
                         </div>`;
                   });
@@ -473,31 +493,26 @@
             });
         }
 
-        // --- 3. REDEEM SYSTEM ---
+        // REDEEM
         function requestRedeemCheck() {
-            // Cek Profil
             if(!userData.nik || !userData.bankNumber) {
                 showToast("Mohon lengkapi profil dulu!");
                 openProfile();
                 return;
             }
-            // Buka Modal Redeem
             document.getElementById('redeemTarget').innerText = `${userData.bankName} - ${userData.bankNumber}`;
             toggleModal('redeemModal', true);
         }
 
         function processRedeem() {
             const amount = parseInt(document.getElementById('redeemAmount').value);
-            
             if(amount < 150) return showToast("Minimal 150 Poin!");
             if(amount > currentPoints) return showToast("Saldo poin tidak cukup!");
 
-            // Potong Saldo (Optimistic)
             db.collection("users").doc(currentUser.uid).update({
                 balance: firebase.firestore.FieldValue.increment(-amount)
             });
 
-            // Buat Request
             db.collection("withdrawals").add({
                 userId: currentUser.uid,
                 userName: userData.name,
@@ -513,21 +528,18 @@
             });
         }
 
-        // --- 4. CONFIRMATION SYSTEM ---
+        // CONFIRMATION
         function checkPendingConfirmations() {
-            // Cek apakah ada transfer yg statusnya "transferred" (nunggu konfirmasi user)
             db.collection("withdrawals")
               .where("userId", "==", currentUser.uid)
               .where("status", "==", "transferred")
               .onSnapshot(snap => {
                   if(!snap.empty) {
-                      // Ada uang masuk!
-                      const doc = snap.docs[0]; // Ambil yg pertama aja
+                      const doc = snap.docs[0];
                       pendingWithdrawalId = doc.id;
-                      
                       document.getElementById('confirmBank').innerText = doc.data().bankDetails;
-                      document.getElementById('profileNotif').style.display = 'block'; // Show dot
-                      toggleModal('confirmModal', true); // Auto open modal
+                      document.getElementById('profileNotif').style.display = 'block';
+                      toggleModal('confirmModal', true);
                   } else {
                       document.getElementById('profileNotif').style.display = 'none';
                   }
@@ -536,7 +548,6 @@
 
         function confirmReceipt() {
             if(!pendingWithdrawalId) return;
-
             db.collection("withdrawals").doc(pendingWithdrawalId).update({
                 status: "completed",
                 completedAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -546,18 +557,14 @@
             });
         }
 
-        // --- UTILS ---
-        function toggleModal(id, show) {
-            document.getElementById(id).style.display = show ? 'flex' : 'none';
-        }
-
+        // UTILS
+        function toggleModal(id, show) { document.getElementById(id).style.display = show ? 'flex' : 'none'; }
         function showToast(msg) {
             const t = document.getElementById('gclToast');
             document.getElementById('toastMsg').innerText = msg;
             t.classList.add('active');
             setTimeout(() => t.classList.remove('active'), 3000);
         }
-
     </script>
 </body>
 </html>
