@@ -299,10 +299,10 @@
     </div>
 
     <script>
-        // CONFIG FIREBASE (DOMAIN BALIK KE DEFAULT)
+        // CONFIG FIREBASE (WAJIB PAKAI .firebaseapp.com AGAR STABIL)
         const firebaseConfig = {
             apiKey: "AIzaSyArd38MI6bL4EI6Q4oW-VJA_SnM0Ky35Js",
-            authDomain: "gardacreativelab.firebaseapp.com", // KEMBALIKAN KE INI
+            authDomain: "gardacreativelab.firebaseapp.com",
             projectId: "gardacreativelab",
             storageBucket: "gardacreativelab.firebasestorage.app",
             messagingSenderId: "983029298298",
@@ -318,7 +318,7 @@
         let currentPoints = 0;
         let pendingWithdrawalId = null;
 
-        // AUTH LOGIC (POPUP KEMBALI DIGUNAKAN)
+        // AUTH LOGIC (SOLUSI KONKRIT IPHONE)
         auth.onAuthStateChanged((user) => {
             if (user) {
                 currentUser = user;
@@ -334,6 +334,7 @@
                 loadLeaderboard();
                 checkPendingConfirmations();
             } else {
+                // User belum login, matikan loader, tampilkan tombol login
                 document.getElementById('loadingScreen').style.display = 'none';
                 document.getElementById('loginScreen').style.display = 'flex';
                 document.getElementById('appScreen').style.display = 'none';
@@ -343,11 +344,22 @@
         function googleLogin() { 
             document.getElementById('loadingScreen').style.display = 'flex';
             
-            // PAKAI POPUP LAGI (SOLUSI IPHONE)
-            auth.signInWithPopup(provider).catch((error) => {
+            // 1. SET PERSISTENCE: MEMAKSA IPHONE MENYIMPAN LOGIN
+            auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+            .then(() => {
+                // 2. LAKUKAN LOGIN POPUP
+                return auth.signInWithPopup(provider);
+            })
+            .then((result) => {
+                // Login Sukses
+                console.log("Login sukses!");
+            })
+            .catch((error) => {
                 document.getElementById('loadingScreen').style.display = 'none';
                 if(error.code === 'auth/popup-blocked') {
-                     alert("⚠️ Browser Anda memblokir Pop-up.\n\nMohon coba klik tombol Login sekali lagi, dan jika muncul peringatan pilih 'Allow' atau 'Izinkan'.");
+                     alert("⚠️ Browser Anda memblokir Pop-up Login.\n\nSOLUSI: Silakan klik tombol Login sekali lagi. Jika muncul pertanyaan, pilih 'Allow' atau 'Izinkan'.");
+                } else if (error.code === 'auth/popup-closed-by-user') {
+                     // User menutup popup sendiri, biarkan saja
                 } else {
                      alert("Gagal Masuk: " + error.message);
                 }
@@ -361,13 +373,12 @@
             }
         }
 
-        // LEADERBOARD
+        // --- SISA LOGIC SAMA PERSIS SEPERTI SEBELUMNYA ---
         function loadLeaderboard() {
             db.collection("users").orderBy("balance", "desc").limit(7).onSnapshot(snap => {
                 const list = document.getElementById("leaderboardList");
                 list.innerHTML = "";
                 let rank = 1;
-
                 snap.forEach(doc => {
                     const u = doc.data();
                     let rankClass = "";
@@ -375,11 +386,9 @@
                     if(rank === 1) { rankClass = "rank-1"; icon = "👑"; }
                     if(rank === 2) { rankClass = "rank-2"; icon = "🥈"; }
                     if(rank === 3) { rankClass = "rank-3"; icon = "🥉"; }
-
                     const avatar = u.photo || "https://via.placeholder.com/40";
                     const name = u.name || "Anonim";
                     const points = u.balance || 0;
-
                     list.innerHTML += `
                         <div class="leaderboard-card ${rankClass}">
                             <div class="rank-num">${icon}</div>
@@ -393,8 +402,6 @@
                 });
             });
         }
-
-        // DATA LOGIC
         function loadUserProfile() {
             db.collection("users").doc(currentUser.uid).onSnapshot(doc => {
                 if(doc.exists) {
@@ -407,7 +414,6 @@
                     document.getElementById('userWA').value = userData.whatsapp || "";
                     document.getElementById('userBankName').value = userData.bankName || "";
                     document.getElementById('userBankNum').value = userData.bankNumber || "";
-
                     if(userData.nik && userData.bankNumber) {
                         const b = document.getElementById('badgeVerif');
                         b.innerText = "Kreator Terverifikasi";
@@ -424,15 +430,12 @@
                 }
             });
         }
-
         function saveProfile() {
             const nik = document.getElementById('userNIK').value;
             const wa = document.getElementById('userWA').value;
             const bank = document.getElementById('userBankName').value;
             const num = document.getElementById('userBankNum').value;
-
             if(!nik || !wa || !bank || !num) return showToast("Semua data wajib diisi!");
-
             db.collection("users").doc(currentUser.uid).update({
                 nik: nik, whatsapp: wa, bankName: bank, bankNumber: num,
                 lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
@@ -441,9 +444,7 @@
                 toggleModal('profileModal', false);
             });
         }
-
         function openProfile() { toggleModal('profileModal', true); }
-
         function loadSubmissions() {
             db.collection("submissions")
               .where("userId", "==", currentUser.uid)
@@ -476,7 +477,6 @@
                   });
               });
         }
-
         function submitKarya() {
             const link = document.getElementById('inputLink').value;
             const platform = document.getElementById('inputPlatform').value;
@@ -495,13 +495,11 @@
                 document.getElementById('inputLink').value = "";
             });
         }
-
         function requestRedeemCheck() {
             if(!userData.nik || !userData.bankNumber) { showToast("Mohon lengkapi profil dulu!"); openProfile(); return; }
             document.getElementById('redeemTarget').innerText = `${userData.bankName} - ${userData.bankNumber}`;
             toggleModal('redeemModal', true);
         }
-
         function processRedeem() {
             const amount = parseInt(document.getElementById('redeemAmount').value);
             if(amount < 150) return showToast("Minimal 150 Poin!");
@@ -512,7 +510,6 @@
                 bankDetails: `${userData.bankName} - ${userData.bankNumber}`, status: "pending", requestedAt: firebase.firestore.FieldValue.serverTimestamp()
             }).then(() => { showToast("Permintaan diajukan!"); toggleModal('redeemModal', false); });
         }
-
         function checkPendingConfirmations() {
             db.collection("withdrawals").where("userId", "==", currentUser.uid).where("status", "==", "transferred").onSnapshot(snap => {
                   if(!snap.empty) {
@@ -523,13 +520,11 @@
                   } else { document.getElementById('profileNotif').style.display = 'none'; }
               });
         }
-
         function confirmReceipt() {
             if(!pendingWithdrawalId) return;
             db.collection("withdrawals").doc(pendingWithdrawalId).update({ status: "completed", completedAt: firebase.firestore.FieldValue.serverTimestamp()
             }).then(() => { showToast("Transaksi Selesai. Terima kasih!"); toggleModal('confirmModal', false); });
         }
-
         function toggleModal(id, show) { document.getElementById(id).style.display = show ? 'flex' : 'none'; }
         function showToast(msg) {
             const t = document.getElementById('gclToast'); document.getElementById('toastMsg').innerText = msg;
