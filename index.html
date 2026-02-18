@@ -83,6 +83,31 @@
             backdrop-filter: blur(5px); cursor: pointer; border: 1px solid rgba(255,255,255,0.3);
         }
 
+        /* --- LEADERBOARD STYLE (BARU) --- */
+        .leaderboard-area { padding: 0 20px; margin-bottom: 25px; }
+        .leaderboard-card {
+            background: white; border-radius: 12px; padding: 10px 15px; margin-bottom: 10px;
+            display: flex; align-items: center; gap: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid #f0f0f0;
+        }
+        
+        /* Rank Colors */
+        .rank-1 { background: linear-gradient(45deg, #FFF9C4, #FFFFFF); border: 1px solid #FFD54F; transform: scale(1.02); }
+        .rank-2 { background: linear-gradient(45deg, #F5F5F5, #FFFFFF); border: 1px solid #E0E0E0; }
+        .rank-3 { background: linear-gradient(45deg, #FFE0B2, #FFFFFF); border: 1px solid #FFCC80; }
+
+        .rank-num {
+            font-size: 1.2rem; font-weight: 700; width: 30px; text-align: center; color: #888;
+        }
+        .rank-1 .rank-num { color: #FFC107; text-shadow: 0 2px 0 rgba(0,0,0,0.1); font-size: 1.5rem; } /* Emas */
+        .rank-2 .rank-num { color: #9E9E9E; } /* Perak */
+        .rank-3 .rank-num { color: #D84315; } /* Perunggu */
+
+        .lb-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+        .lb-info { flex-grow: 1; }
+        .lb-name { font-weight: 600; font-size: 0.9rem; color: var(--text-main); }
+        .lb-points { font-weight: 700; color: var(--primary); font-size: 0.9rem; }
+
         /* CONTENT LIST */
         .content-area { padding: 0 20px; }
         .content-card {
@@ -212,6 +237,15 @@
             <div class="btn-redeem" onclick="requestRedeemCheck()">Tukar Uang</div>
         </div>
 
+        <div class="leaderboard-area">
+            <h3 style="font-size:1rem; font-weight:700; margin-bottom:15px; color:var(--primary);">
+                <i class="fas fa-trophy"></i> Top Kreator
+            </h3>
+            <div id="leaderboardList">
+                <p style="text-align:center; color:#ccc; font-size:0.8rem;">Memuat Peringkat...</p>
+            </div>
+        </div>
+
         <div class="content-area">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                 <h3 style="font-size:1rem; font-weight:700;">Riwayat Karya</h3>
@@ -330,9 +364,10 @@
     </div>
 
     <script>
+        // CONFIG FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyArd38MI6bL4EI6Q4oW-VJA_SnM0Ky35Js",
-            authDomain: "gardacreativelab.fun",
+            authDomain: "gardacreativelab.fun", // SUDAH FIX DOMAIN
             projectId: "gardacreativelab",
             storageBucket: "gardacreativelab.firebasestorage.app",
             messagingSenderId: "983029298298",
@@ -348,22 +383,14 @@
         let currentPoints = 0;
         let pendingWithdrawalId = null;
 
-        // --- AUTH LOGIC (FIX MENTAL BALIK) ---
-        // Kita gunakan getRedirectResult untuk menangkap user yang baru balik dari Google
-        
-        auth.getRedirectResult()
-            .then((result) => {
-                if (result.user) {
-                    // User sukses login dari redirect
-                    console.log("Login sukses via redirect");
-                }
-            })
-            .catch((error) => {
-                // Jika error (misal unauthorized domain), munculkan alert
-                alert("Login Gagal: " + error.message + "\nPastikan domain sudah di-whitelist di Firebase!");
-                document.getElementById('loadingScreen').style.display = 'none';
-                document.getElementById('loginScreen').style.display = 'flex';
-            });
+        // AUTH LOGIC (FIX IPHONE + REDIRECT)
+        auth.getRedirectResult().then((result) => {
+            if (result.user) console.log("Login sukses via redirect");
+        }).catch((error) => {
+            alert("Login Gagal: " + error.message);
+            document.getElementById('loadingScreen').style.display = 'none';
+            document.getElementById('loginScreen').style.display = 'flex';
+        });
 
         auth.onAuthStateChanged((user) => {
             if (user) {
@@ -377,10 +404,9 @@
 
                 loadUserProfile();
                 loadSubmissions();
+                loadLeaderboard(); // LOAD LEADERBOARD
                 checkPendingConfirmations();
             } else {
-                // Jangan langsung show login screen, tunggu redirect result selesai dulu
-                // Tapi kasih timeout biar gak loading selamanya kalau emang user belum login
                 setTimeout(() => {
                     if(!currentUser) {
                         document.getElementById('loadingScreen').style.display = 'none';
@@ -403,7 +429,44 @@
             }
         }
 
-        // --- DATA LOGIC ---
+        // --- NEW: LEADERBOARD LOGIC ---
+        function loadLeaderboard() {
+            // Ambil 7 user dengan saldo tertinggi
+            db.collection("users").orderBy("balance", "desc").limit(7).onSnapshot(snap => {
+                const list = document.getElementById("leaderboardList");
+                list.innerHTML = "";
+                let rank = 1;
+
+                snap.forEach(doc => {
+                    const u = doc.data();
+                    let rankClass = "";
+                    let icon = `#${rank}`;
+
+                    if(rank === 1) { rankClass = "rank-1"; icon = "👑"; }
+                    if(rank === 2) { rankClass = "rank-2"; icon = "🥈"; }
+                    if(rank === 3) { rankClass = "rank-3"; icon = "🥉"; }
+
+                    // Avatar fallback jika user belum login/tidak ada foto
+                    const avatar = u.photo || "https://via.placeholder.com/40";
+                    const name = u.name || "Anonim";
+                    const points = u.balance || 0;
+
+                    list.innerHTML += `
+                        <div class="leaderboard-card ${rankClass}">
+                            <div class="rank-num">${icon}</div>
+                            <img src="${avatar}" class="lb-avatar">
+                            <div class="lb-info">
+                                <div class="lb-name">${name}</div>
+                            </div>
+                            <div class="lb-points">${points} Poin</div>
+                        </div>
+                    `;
+                    rank++;
+                });
+            });
+        }
+
+        // DATA LOGIC
         function loadUserProfile() {
             db.collection("users").doc(currentUser.uid).onSnapshot(doc => {
                 if(doc.exists) {
@@ -415,7 +478,6 @@
                     document.getElementById('profModalImg').src = userData.photo;
                     document.getElementById('userNIK').value = userData.nik || "";
                     document.getElementById('userWA').value = userData.whatsapp || "";
-                    
                     document.getElementById('userBankName').value = userData.bankName || "";
                     document.getElementById('userBankNum').value = userData.bankNumber || "";
 
