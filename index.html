@@ -348,11 +348,27 @@
         let currentPoints = 0;
         let pendingWithdrawalId = null;
 
-        // AUTH LOGIC (REDIRECT)
+        // --- AUTH LOGIC (FIX MENTAL BALIK) ---
+        // Kita gunakan getRedirectResult untuk menangkap user yang baru balik dari Google
+        
+        auth.getRedirectResult()
+            .then((result) => {
+                if (result.user) {
+                    // User sukses login dari redirect
+                    console.log("Login sukses via redirect");
+                }
+            })
+            .catch((error) => {
+                // Jika error (misal unauthorized domain), munculkan alert
+                alert("Login Gagal: " + error.message + "\nPastikan domain sudah di-whitelist di Firebase!");
+                document.getElementById('loadingScreen').style.display = 'none';
+                document.getElementById('loginScreen').style.display = 'flex';
+            });
+
         auth.onAuthStateChanged((user) => {
-            document.getElementById('loadingScreen').style.display = 'none';
             if (user) {
                 currentUser = user;
+                document.getElementById('loadingScreen').style.display = 'none';
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('appScreen').style.display = 'block';
                 
@@ -363,8 +379,15 @@
                 loadSubmissions();
                 checkPendingConfirmations();
             } else {
-                document.getElementById('loginScreen').style.display = 'flex';
-                document.getElementById('appScreen').style.display = 'none';
+                // Jangan langsung show login screen, tunggu redirect result selesai dulu
+                // Tapi kasih timeout biar gak loading selamanya kalau emang user belum login
+                setTimeout(() => {
+                    if(!currentUser) {
+                        document.getElementById('loadingScreen').style.display = 'none';
+                        document.getElementById('loginScreen').style.display = 'flex';
+                        document.getElementById('appScreen').style.display = 'none';
+                    }
+                }, 1500);
             }
         });
 
@@ -380,7 +403,7 @@
             }
         }
 
-        // PROFILE
+        // --- DATA LOGIC ---
         function loadUserProfile() {
             db.collection("users").doc(currentUser.uid).onSnapshot(doc => {
                 if(doc.exists) {
@@ -393,7 +416,6 @@
                     document.getElementById('userNIK').value = userData.nik || "";
                     document.getElementById('userWA').value = userData.whatsapp || "";
                     
-                    // Set Bank Select Value
                     document.getElementById('userBankName').value = userData.bankName || "";
                     document.getElementById('userBankNum').value = userData.bankNumber || "";
 
@@ -433,7 +455,6 @@
 
         function openProfile() { toggleModal('profileModal', true); }
 
-        // SUBMISSIONS
         function loadSubmissions() {
             db.collection("submissions")
               .where("userId", "==", currentUser.uid)
@@ -447,7 +468,6 @@
                   snap.forEach(doc => {
                       const d = doc.data();
                       let icon = 'fa-link'; let bg = '#333';
-                      // Platform Icon Logic (Updated)
                       if(d.platform == 'facebook') { icon = 'fa-facebook-f'; bg = '#1877F2'; }
                       if(d.platform == 'tiktok') { icon = 'fa-tiktok'; bg = '#000'; }
                       if(d.platform == 'instagram') { icon = 'fa-instagram'; bg = 'linear-gradient(45deg, #f09433, #bc1888)'; }
@@ -493,7 +513,6 @@
             });
         }
 
-        // REDEEM
         function requestRedeemCheck() {
             if(!userData.nik || !userData.bankNumber) {
                 showToast("Mohon lengkapi profil dulu!");
@@ -528,7 +547,6 @@
             });
         }
 
-        // CONFIRMATION
         function checkPendingConfirmations() {
             db.collection("withdrawals")
               .where("userId", "==", currentUser.uid)
@@ -557,7 +575,6 @@
             });
         }
 
-        // UTILS
         function toggleModal(id, show) { document.getElementById(id).style.display = show ? 'flex' : 'none'; }
         function showToast(msg) {
             const t = document.getElementById('gclToast');
