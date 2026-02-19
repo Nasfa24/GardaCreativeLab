@@ -2,8 +2,8 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GCL - Akademi Kreator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GCL - Dashboard Kurator</title>
     
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%2303754c%22/><text x=%2250%22 y=%2270%22 font-family=%22Arial, sans-serif%22 font-size=%2270%22 font-weight=%22bold%22 fill=%22white%22 text-anchor=%22middle%22>G</text></svg>">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -11,76 +11,51 @@
 
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 
     <style>
-        :root { --primary: #03754c; --primary-dark: #025436; --secondary: #FFC107; --accent: #00E676; --danger: #FF5252; --bg-body: #F5F7FA; --text-main: #1A233A; --radius: 16px; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { background-color: var(--bg-body); color: var(--text-main); padding-bottom: 100px; -webkit-tap-highlight-color: transparent; }
+        :root { --primary: #03754c; --bg: #F5F7FA; --secondary: #FFC107; --danger: #FF5252; --text: #333; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: var(--text); }
+        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
+        .login-box { background: white; padding: 30px; border-radius: 16px; width: 320px; text-align: center; color: #333; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .form-input { width: 100%; padding: 12px; margin-bottom: 15px; border: 2px solid #eee; border-radius: 8px; font-size: 1rem; outline: none; }
+        .btn { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; }
+        .btn-danger { background: var(--danger); }
+        .btn-warning { background: #FF9800; color: white; }
+        .btn-outline { background: white; color: var(--primary); border: 2px solid var(--primary); }
+        #dashboard { display: none; max-width: 1000px; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: white; padding: 20px; border-radius: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .stats-container { display: flex; gap: 15px; margin-bottom: 20px; }
+        .stat-box { flex: 1; background: white; padding: 20px; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); text-align: center; border-bottom: 4px solid var(--primary); }
+        .stat-box:nth-child(2) { border-bottom-color: var(--secondary); }
+        .stat-num { font-size: 2.2rem; font-weight: 700; color: var(--primary); line-height: 1; margin-bottom: 5px; }
+        .stat-box:nth-child(2) .stat-num { color: #F57C00; }
+        .stat-label { font-size: 0.85rem; color: #666; font-weight: 600; text-transform: uppercase; }
         
-        #loadingScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(255,255,255,0.95); }
-        .loader { width: 40px; height: 40px; border: 4px solid #ddd; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* AUTH SCREEN (LOGIN & REGISTER) */
-        #loginScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary); z-index: 9999; display: none; flex-direction: column; align-items: center; justify-content: center; color: white; }
-        .auth-box { background: white; padding: 30px 20px; border-radius: 20px; width: 90%; max-width: 350px; text-align: center; color: #333; box-shadow: 0 10px 30px rgba(0,0,0,0.2); max-height: 85vh; overflow-y: auto; }
-        .auth-input { width: 100%; padding: 12px; margin-bottom: 12px; border: 2px solid #eee; border-radius: 12px; font-size: 0.95rem; outline: none; }
-        .auth-input:focus { border-color: var(--primary); }
-        .auth-btn { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; margin-top: 10px; }
-        .auth-link { font-size: 0.85rem; margin-top: 20px; color: var(--primary); font-weight: 600; cursor: pointer; }
-
-        #appScreen { display: none; }
-        .header { background-color: var(--primary); padding: 30px 20px 90px 20px; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; color: white; }
-        .header-top { display: flex; justify-content: space-between; align-items: center; }
-        .user-profile { display: flex; align-items: center; gap: 10px; cursor: pointer; }
-        .user-avatar { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--secondary); object-fit: cover; background: white; }
+        .tabs-wrapper { overflow-x: auto; white-space: nowrap; margin-bottom: 20px; padding-bottom: 5px; }
+        .tabs { display: inline-flex; gap: 10px; }
+        .tab { padding: 10px 20px; background: white; border-radius: 30px; cursor: pointer; font-weight: 600; font-size: 0.9rem; color: #666; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .tab.active { background: var(--primary); color: white; }
+        .hidden { display: none; }
         
-        .poin-card { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); margin: -70px 20px 20px 20px; padding: 25px; border-radius: var(--radius); box-shadow: 0 10px 25px rgba(3, 117, 76, 0.25); color: white; display: flex; justify-content: space-between; align-items: center; position: relative; overflow: hidden; }
-        .poin-card::after { content: ''; position: absolute; top: -30px; right: -30px; width: 100px; height: 100px; background: var(--accent); opacity: 0.15; border-radius: 50%; }
-        .poin-value { font-size: 2.2rem; font-weight: 700; color: var(--secondary); line-height: 1; }
-        .btn-redeem { background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 30px; color: white; text-decoration: none; font-size: 0.8rem; font-weight: 600; cursor: pointer; border: 1px solid rgba(255,255,255,0.3); }
+        .card { background: white; padding: 20px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #ccc; flex-wrap: wrap; gap:10px; }
+        .card-wd { border-left-color: var(--secondary); }
+        .card-pending { border-left-color: #2196F3; }
+        .card-reval { border-left-color: #FF9800; background: #FFFDF5; } 
+        .card-approved { border-left-color: #4CAF50; }
+        .card-rejected { border-left-color: var(--danger); }
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; background: #eee; display: inline-block; }
+        .badge-points { background: #E8F5E9; color: var(--primary); }
         
-        .leaderboard-area { padding: 0 20px; margin-bottom: 25px; }
-        .leaderboard-card { background: white; border-radius: 12px; padding: 10px 15px; margin-bottom: 10px; display: flex; align-items: center; gap: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid #f0f0f0; }
-        .rank-1 { background: linear-gradient(45deg, #FFF9C4, #FFFFFF); border: 1px solid #FFD54F; transform: scale(1.02); }
-        .rank-2 { background: linear-gradient(45deg, #F5F5F5, #FFFFFF); border: 1px solid #E0E0E0; }
-        .rank-3 { background: linear-gradient(45deg, #FFE0B2, #FFFFFF); border: 1px solid #FFCC80; }
-        .rank-num { font-size: 1.2rem; font-weight: 700; width: 30px; text-align: center; color: #888; }
-        .rank-1 .rank-num { color: #FFC107; font-size: 1.5rem; } .rank-2 .rank-num { color: #9E9E9E; } .rank-3 .rank-num { color: #D84315; }
-        .lb-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background:#eee; }
-        .lb-info { flex-grow: 1; }
-        .lb-name { font-weight: 600; font-size: 0.9rem; color: var(--text-main); }
-        .lb-points { font-weight: 700; color: var(--primary); font-size: 0.9rem; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; display: none; align-items: center; justify-content: center; }
+        .modal-content { background: white; width: 90%; max-width: 500px; border-radius: 20px; padding: 30px; max-height: 90vh; overflow-y: auto; }
+        .calc-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .calc-grid input { text-align: center; font-weight: bold; font-size:1.2rem; }
+        .checkbox-group { background: #f9f9f9; padding: 15px; border-radius: 12px; margin-bottom: 20px; }
+        .checkbox-item { display: flex; align-items: center; margin-bottom: 10px; font-size: 0.9rem; cursor: pointer; }
+        .checkbox-item input { margin-right: 10px; transform: scale(1.2); }
+        .result-box { background: var(--primary); color: white; padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 20px; }
+        .result-points { font-size: 2.5rem; font-weight: 800; color: var(--secondary); line-height: 1; margin: 10px 0; }
         
-        .content-area { padding: 0 20px; }
-        .tabs { display: flex; gap: 10px; margin-bottom: 15px; }
-        .tab-btn { flex: 1; text-align: center; padding: 8px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; cursor: pointer; background: #eee; color: #666; }
-        .tab-btn.active { background: var(--primary); color: white; }
-
-        .content-card { background: white; border-radius: var(--radius); padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; gap: 15px; position: relative; }
-        .platform-icon { width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; color: white; }
-        .icon-tiktok { background: #000; } .icon-instagram { background: linear-gradient(45deg, #f09433, #bc1888); } .icon-facebook { background: #1877F2; } .icon-youtube { background: #FF0000; }
-        .status-badge { font-size: 0.7rem; padding: 4px 8px; border-radius: 6px; font-weight: 600; position: absolute; top: 15px; right: 15px; }
-        .badge-pending { background: #FFF3E0; color: #FF9800; } .badge-approved { background: #E8F5E9; color: var(--primary); } .badge-rejected { background: #FFEBEE; color: var(--danger); }
-        
-        .fab { position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; background: var(--accent); color: var(--primary-dark); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; box-shadow: 0 4px 20px rgba(0, 230, 118, 0.4); cursor: pointer; z-index: 90; }
-        
-        /* MODALS & CUSTOM ALERTS */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 200; display: none; align-items: flex-end; }
-        .modal-content { background: white; width: 100%; border-top-left-radius: 25px; border-top-right-radius: 25px; padding: 30px 25px; animation: slideUp 0.3s ease-out; max-height: 90vh; overflow-y:auto; }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        .form-label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 5px; margin-top: 15px; }
-        .form-input { width: 100%; padding: 12px; border: 2px solid #EEE; border-radius: 12px; font-size: 1rem; outline: none; background: #fff; }
-        .btn-submit { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; margin-top: 20px; }
-        
-        .profile-modal-content { background: #F5F7FA; width: 100%; border-radius: 25px 25px 0 0; padding: 0; overflow-y: auto; max-height: 90vh; position: relative; animation: slideUp 0.3s ease-out; }
-        .profile-cover { height: 120px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); position: relative; }
-        .profile-avatar-large { width: 100px; height: 100px; border-radius: 50%; border: 4px solid white; position: absolute; bottom: -50px; left: 50%; transform: translateX(-50%); background: white; object-fit: cover; }
-        .profile-info { margin-top: 60px; padding: 20px; text-align: center; }
-        .profile-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; margin-bottom: 20px; }
-        
-        /* CUSTOM CONFIRM/ALERT BOX */
         .gcl-dialog { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 99999; display: none; align-items: center; justify-content: center; }
         .dialog-box { background: white; width: 85%; max-width: 350px; border-radius: 20px; padding: 25px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: popIn 0.3s ease-out; }
         @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
@@ -89,150 +64,97 @@
         .d-btn-cancel { background: #eee; color: #555; }
         .d-btn-ok { background: var(--primary); color: white; }
 
-        .gcl-toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: rgba(255,255,255,0.95); padding: 12px 20px; border-radius: 50px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 12px; z-index: 9999; transition: all 0.4s; }
-        .gcl-toast.active { transform: translateX(-50%) translateY(0); }
-        .notif-dot { width: 10px; height: 10px; background: red; border-radius: 50%; border: 2px solid var(--primary); position: absolute; top: 0; right: 0; display: none; }
-        .hidden { display: none; }
+        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: #333; color: white; padding: 12px 25px; border-radius: 30px; z-index: 9999; transition: 0.4s; font-weight: 600; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .toast.show { transform: translateX(-50%) translateY(0); }
     </style>
 </head>
 <body>
 
-    <div id="loadingScreen"><div class="loader"></div><p style="font-size:0.9rem; color:var(--primary); font-weight:bold;">Memuat GCL...</p></div>
-
-    <div id="loginScreen">
-        <h1 style="margin-bottom:5px;">Garda Creative Lab</h1>
-        <p style="opacity:0.8; font-size:0.9rem; margin-bottom:30px;">Platform Kreator Masa Depan</p>
-        
-        <div class="auth-box" id="formLogin">
-            <h3 style="margin-bottom:20px; color:var(--primary);">Masuk Akun</h3>
-            <input type="email" id="loginEmail" class="auth-input" placeholder="Alamat Email">
-            <input type="password" id="loginPass" class="auth-input" placeholder="Password">
-            <button class="auth-btn" onclick="doLogin()">MASUK</button>
-            <div class="auth-link" onclick="toggleAuth('register')">Belum punya akun? Daftar di sini</div>
-        </div>
-
-        <div class="auth-box" id="formRegister" style="display:none; text-align:left;">
-            <h3 style="margin-bottom:20px; color:var(--primary); text-align:center;">Daftar Kreator</h3>
-            
-            <label style="font-size:0.8rem; font-weight:bold; color:#555; margin-left:5px;">Akun Login</label>
-            <input type="text" id="regName" class="auth-input" placeholder="Nama Lengkap">
-            <input type="email" id="regEmail" class="auth-input" placeholder="Alamat Email Aktif">
-            <input type="password" id="regPass" class="auth-input" placeholder="Buat Password (Min 6 Karakter)">
-            
-            <label style="font-size:0.8rem; font-weight:bold; color:#555; margin-left:5px; margin-top:10px; display:block;">Data Pencairan (Wajib)</label>
-            <input type="number" id="regNIK" class="auth-input" placeholder="16 Digit NIK KTP">
-            <input type="number" id="regWA" class="auth-input" placeholder="No. WhatsApp (Contoh: 0812...)">
-            
-            <select id="regBankName" class="auth-input" style="color:#555;">
-                <option value="" disabled selected>Pilih Bank / E-Wallet</option>
-                <option value="Bank Mandiri">Bank Mandiri</option>
-                <option value="Bank BCA">Bank BCA</option>
-                <option value="Bank BNI">Bank BNI</option>
-                <option value="Bank BRI">Bank BRI</option>
-                <option value="e-Wallet Dana">e-Wallet Dana</option>
-                <option value="e-Wallet ShoppeePay">e-Wallet ShoppeePay</option>
-            </select>
-            <input type="number" id="regBankNum" class="auth-input" placeholder="Nomor Rekening">
-
-            <button class="auth-btn" onclick="doRegister()">DAFTAR SEKARANG</button>
-            <div class="auth-link" style="text-align:center;" onclick="toggleAuth('login')">Batal / Kembali ke Login</div>
+    <div id="loginOverlay">
+        <h2 style="margin-bottom: 5px;">GCL ADMIN</h2>
+        <p style="margin-bottom: 20px; opacity: 0.8;">Gerbang Kurator</p>
+        <div class="login-box">
+            <input type="text" id="adminUser" class="form-input" placeholder="Username">
+            <input type="password" id="adminPass" class="form-input" placeholder="Password">
+            <button class="btn" onclick="checkLogin()">MASUK</button>
+            <p id="loginMsg" style="color:red; font-size:0.8rem; margin-top:10px;"></p>
         </div>
     </div>
 
-    <div id="appScreen">
+    <div id="dashboard">
         <div class="header">
-            <div class="header-top">
-                <div class="user-profile" onclick="openProfile()">
-                    <div style="position:relative;">
-                        <img id="userPhoto" src="" class="user-avatar"><div class="notif-dot" id="profileNotif"></div>
-                    </div>
-                    <div><div class="user-name" id="userName" style="font-weight:700;">Loading...</div><div style="font-size:0.75rem; opacity:0.8;">Klik untuk Profil</div></div>
-                </div>
-            </div>
+            <div><h2 style="color:var(--primary); margin:0;">Ruang Kurasi</h2><div style="font-size:0.8rem; color:#666;">Garda Creative Lab</div></div>
+            <button onclick="logoutAdmin()" class="btn btn-outline" style="width:auto; padding:8px 15px;"><i class="fas fa-sign-out-alt"></i> Keluar</button>
         </div>
 
-        <div class="poin-card">
-            <div><div style="font-size:0.8rem; opacity:0.9;">Saldo Poin</div><div class="poin-value" id="displayPoints">0</div></div>
-            <div class="btn-redeem" onclick="requestRedeemCheck()">Tukar Uang</div>
+        <div class="stats-container">
+            <div class="stat-box"><div class="stat-num" id="statKreator">0</div><div class="stat-label"><i class="fas fa-users"></i> Total Kreator</div></div>
+            <div class="stat-box"><div class="stat-num" id="statKarya">0</div><div class="stat-label"><i class="fas fa-check-circle"></i> Karya Diterima</div></div>
         </div>
 
-        <div class="leaderboard-area">
-            <h3 style="font-size:1rem; font-weight:700; margin-bottom:15px; color:var(--primary);"><i class="fas fa-trophy"></i> Top Kreator</h3>
-            <div id="leaderboardList"><p style="text-align:center; color:#ccc; font-size:0.8rem;">Memuat Peringkat...</p></div>
-        </div>
-
-        <div class="content-area">
+        <div class="tabs-wrapper">
             <div class="tabs">
-                <div class="tab-btn active" id="tabKarya" onclick="switchView('karya')">Riwayat Karya</div>
-                <div class="tab-btn" id="tabWd" onclick="switchView('wd')">Riwayat Penarikan</div>
+                <div class="tab active" onclick="switchTab('pending')"><i class="fas fa-inbox"></i> Antrian Validasi</div>
+                <div class="tab" onclick="switchTab('history')"><i class="fas fa-history"></i> Riwayat Karya</div>
+                <div class="tab" onclick="switchTab('wd')"><i class="fas fa-wallet"></i> Permintaan WD</div>
+                <div class="tab" onclick="switchTab('wd-done')"><i class="fas fa-check-double"></i> Histori WD (Selesai)</div>
             </div>
-            <div id="submissionsList"><p style="text-align:center; color:#ccc; margin-top:20px;">Memuat data...</p></div>
-            <div id="wdHistoryList" class="hidden"><p style="text-align:center; color:#ccc; margin-top:20px;">Belum ada penarikan.</p></div>
         </div>
-        <div class="fab" onclick="toggleModal('submitModal', true)"><i class="fas fa-plus"></i></div>
+
+        <div id="panel-pending"><div id="listPending"><p style="text-align:center; color:#888;">Memuat data...</p></div></div>
+        <div id="panel-history" class="hidden">
+            <div style="margin-bottom:15px; background:#fff; padding:15px; border-radius:12px; font-size:0.85rem; color:#666;"><i class="fas fa-info-circle"></i> Daftar karya yang sudah dinilai. Klik <b>"Edit Nilai"</b> jika ada karya yang bertambah viral.</div>
+            <div id="listHistory"><p style="text-align:center; color:#888;">Memuat data...</p></div>
+        </div>
+        <div id="panel-wd" class="hidden"><div id="listWd"><p style="text-align:center; color:#888;">Memuat data...</p></div></div>
+        <div id="panel-wd-done" class="hidden"><div id="listWdDone"><p style="text-align:center; color:#888;">Memuat data...</p></div></div>
     </div>
 
-    <div class="modal-overlay" id="submitModal">
+    <div class="modal-overlay" id="calcModal">
         <div class="modal-content">
-            <h2 style="font-size:1.2rem; margin-bottom:20px;">Submit Karya</h2>
-            <label class="form-label">Platform</label>
-            <select id="inputPlatform" class="form-input">
-                <option value="tiktok">TikTok</option><option value="instagram">Instagram</option><option value="youtube">Youtube</option><option value="facebook">Facebook</option>
-            </select>
-            <label class="form-label">Link Postingan</label>
-            <input type="text" id="inputLink" class="form-input" placeholder="Paste Link di sini...">
-            <button class="btn-submit" onclick="submitKarya()">Kirim Karya</button>
-            <div style="text-align:center; margin-top:15px; color:#888;" onclick="toggleModal('submitModal', false)">Batal</div>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="redeemModal">
-        <div class="modal-content">
-            <h2 style="font-size:1.2rem; margin-bottom:5px;">Tarik Tunai</h2>
-            <p style="font-size:0.8rem; color:#666; margin-bottom:20px;">Min. 150 Poin (Rp 50.000)</p>
-            <label class="form-label">Jumlah Poin</label>
-            <input type="number" id="redeemAmount" class="form-input" placeholder="Minimal 150">
-            <div style="background:#F5F7FA; padding:10px; border-radius:8px; margin-top:10px; font-size:0.85rem;">Transfer ke:<br><b id="redeemTarget">...</b></div>
-            <button class="btn-submit" style="background:var(--secondary); color:black;" onclick="processRedeem()">Ajukan</button>
-            <div style="text-align:center; margin-top:15px; color:#888;" onclick="toggleModal('redeemModal', false)">Batal</div>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="profileModal">
-        <div class="profile-modal-content">
-            <div class="profile-cover">
-                <img id="profModalImg" src="" class="profile-avatar-large">
-                <div style="position: absolute; top: 15px; right: 20px; color: white; cursor: pointer;" onclick="toggleModal('profileModal', false)"><i class="fas fa-times" style="font-size: 1.5rem;"></i></div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+                <h3 style="margin:0; color:var(--primary);">Kalkulator Poin</h3>
+                <i class="fas fa-times" style="cursor:pointer; font-size:1.2rem;" onclick="closeModal()"></i>
             </div>
-            <div class="profile-info">
-                <div class="profile-name" id="profModalName" style="font-weight:bold; font-size:1.2rem;">...</div>
-                <div class="profile-badge" id="badgeVerif" style="background:#E3F2FD; color:#03754c;">Kreator Terverifikasi</div>
-                <div style="text-align:left; margin-top:10px;">
-                    <h4 style="color:var(--primary); border-bottom:2px solid #eee; padding-bottom:5px; margin-bottom:15px;">Data Kreator (Bisa Diedit)</h4>
-                    <label class="form-label">NIK (KTP)</label><input type="number" id="userNIK" class="form-input" placeholder="16 Digit NIK">
-                    <label class="form-label">No. WhatsApp</label><input type="number" id="userWA" class="form-input" placeholder="Contoh: 08123456789">
-                    <label class="form-label">Nama Bank / E-Wallet</label>
-                    <select id="userBankName" class="form-input">
-                        <option value="" disabled selected>Pilih Bank / E-Wallet</option>
-                        <option value="Bank Mandiri">Bank Mandiri</option><option value="Bank BCA">Bank BCA</option>
-                        <option value="Bank BNI">Bank BNI</option><option value="Bank BRI">Bank BRI</option>
-                        <option value="e-Wallet Dana">e-Wallet Dana</option><option value="e-Wallet ShoppeePay">e-Wallet ShoppeePay</option>
-                    </select>
-                    <label class="form-label">Nomor Rekening</label><input type="number" id="userBankNum" class="form-input" placeholder="Nomor Rekening">
-                    <button class="btn-submit" onclick="saveProfile()" style="background:var(--text-main); color:white;"><i class="fas fa-save"></i> Simpan Perubahan</button>
-                </div>
-                <div style="margin-top:30px; border-top:1px solid #eee; padding-top:20px;">
-                    <div onclick="requestLogout()" style="color: var(--danger); font-weight:600; cursor:pointer; background:#FFEBEE; padding:15px; border-radius:12px;"><i class="fas fa-sign-out-alt"></i> KELUAR (LOGOUT)</div>
+            
+            <div style="font-size:0.85rem; margin-bottom:15px; color:#555;">
+                Kreator: <b id="calcKreatorName">...</b><br>
+                Link: <a href="#" id="calcLink" target="_blank" style="color:blue;">Buka Postingan Asli</a>
+            </div>
+
+            <label style="font-size:0.8rem; font-weight:bold; color:#666;">Engagement Baru:</label>
+            <div class="calc-grid">
+                <div><small>Views</small><input type="number" id="c_views" class="form-input" placeholder="0" oninput="liveCalc()"></div>
+                <div><small>Likes</small><input type="number" id="c_likes" class="form-input" placeholder="0" oninput="liveCalc()"></div>
+                <div><small>Comments</small><input type="number" id="c_comments" class="form-input" placeholder="0" oninput="liveCalc()"></div>
+            </div>
+
+            <div id="critArea">
+                <label style="font-size:0.8rem; font-weight:bold; color:#666;">Kriteria Konten (Centang yang ada):</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-item"><input type="checkbox" class="c_crit" value="7" onchange="liveCalc()"> Sosok Gus Muhaimin (+7)</label>
+                    <label class="checkbox-item"><input type="checkbox" class="c_crit" value="5" onchange="liveCalc()"> Logo / Atribut PKB (+5)</label>
+                    <label class="checkbox-item"><input type="checkbox" class="c_crit" value="4" onchange="liveCalc()"> Aktor/Tokoh PKB Lain (+4)</label>
+                    <label class="checkbox-item"><input type="checkbox" class="c_crit" value="2" onchange="liveCalc()"> Pesan Politik/Kebijakan (+2)</label>
+                    <label class="checkbox-item"><input type="checkbox" class="c_crit" value="2" onchange="liveCalc()"> Edukasi Bermanfaat (+2)</label>
+                    <label class="checkbox-item"><input type="checkbox" class="c_crit" value="2" onchange="liveCalc()"> Mengikuti Trend Aktif (+2)</label>
                 </div>
             </div>
-        </div>
-    </div>
+            
+            <div id="lockedCritMsg" style="display:none; background:#E8F5E9; color:#2E7D32; padding:12px; border-radius:8px; font-size:0.8rem; font-weight:600; margin-bottom:20px; text-align:center;">
+                <i class="fas fa-lock"></i> Kriteria konten dikunci dari penilaian awal. Cukup ubah angka Views/Likes/Comments.
+            </div>
 
-    <div class="modal-overlay" id="confirmModal">
-        <div class="modal-content">
-            <h2 style="color:var(--primary);"><i class="fas fa-check-circle"></i> Uang Masuk!</h2>
-            <p style="margin:15px 0; line-height:1.5; color:#555;">Kurator telah mentransfer dana penarikan Anda.<br>Silakan cek rekening <b><span id="confirmBank"></span></b>.</p>
-            <button class="btn-submit" onclick="confirmReceipt()">YA, UANG DITERIMA</button>
+            <div class="result-box">
+                <div style="font-size:0.8rem;">Estimasi Poin Akhir</div>
+                <div class="result-points" id="c_result">0</div>
+                <div id="c_warning" style="font-size:0.75rem; color:#FFCDD2; display:none;"><i class="fas fa-exclamation-triangle"></i> Pinalti: Kriteria kurang dari 2 (Poin dibagi 10)</div>
+            </div>
+
+            <div style="display:flex; gap:10px;">
+                <button class="btn btn-danger" onclick="submitGrade('rejected')"><i class="fas fa-times"></i> Tolak</button>
+                <button class="btn" onclick="submitGrade('approved')"><i class="fas fa-check"></i> Simpan & Approve</button>
+            </div>
         </div>
     </div>
 
@@ -247,238 +169,184 @@
         </div>
     </div>
 
-    <div id="gclToast" class="gcl-toast"><i class="fas fa-info-circle" style="color:var(--primary); font-size:1.2rem;"></i><div id="toastMsg" style="font-size:0.9rem; font-weight:600;">Notifikasi</div></div>
+    <div id="toast" class="toast">Berhasil!</div>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyArd38MI6bL4EI6Q4oW-VJA_SnM0Ky35Js",
-            authDomain: "gardacreativelab.firebaseapp.com",
-            projectId: "gardacreativelab",
-            storageBucket: "gardacreativelab.firebasestorage.app",
-            messagingSenderId: "983029298298",
-            appId: "1:983029298298:web:5911967a358adb373df7c3"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const auth = firebase.auth();
+        const ADMIN_USERNAME = "admin"; const ADMIN_PASSWORD = "gcl2026";
+        const firebaseConfig = { apiKey: "AIzaSyArd38MI6bL4EI6Q4oW-VJA_SnM0Ky35Js", authDomain: "gardacreativelab.firebaseapp.com", projectId: "gardacreativelab", storageBucket: "gardacreativelab.firebasestorage.app", messagingSenderId: "983029298298", appId: "1:983029298298:web:5911967a358adb373df7c3" };
+        firebase.initializeApp(firebaseConfig); const db = firebase.firestore();
 
-        let currentUser = null; let userData = {}; let currentPoints = 0; let pendingWithdrawalId = null;
-        let defaultAvatar = "https://ui-avatars.com/api/?background=03754c&color=fff&name=";
+        let currentDocId = null; let currentUserId = null; let oldScore = 0;
+        let activeMultiplier = 0; let currentCalculatedMultiplier = 0;
 
-        // AUTH STATE (MEMASTIKAN SESSION TIDAK TERHAPUS SAAT REFRESH)
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                currentUser = user; 
-                document.getElementById('loadingScreen').style.display = 'none'; 
-                document.getElementById('loginScreen').style.display = 'none'; 
-                document.getElementById('appScreen').style.display = 'block';
+        window.onload = function() { if (sessionStorage.getItem('gclAdminLoggedIn') === 'true') { document.getElementById('loginOverlay').style.display = 'none'; document.getElementById('dashboard').style.display = 'block'; initDashboard(); } };
+
+        function checkLogin() { if(document.getElementById('adminUser').value === ADMIN_USERNAME && document.getElementById('adminPass').value === ADMIN_PASSWORD) { sessionStorage.setItem('gclAdminLoggedIn', 'true'); document.getElementById('loginOverlay').style.display = 'none'; document.getElementById('dashboard').style.display = 'block'; initDashboard(); } else { document.getElementById('loginMsg').innerText = "Username atau Password salah!"; } }
+        function logoutAdmin() { showDialog("Keluar", "Akhiri sesi Kurator?", () => { sessionStorage.removeItem('gclAdminLoggedIn'); window.location.reload(); }); }
+
+        function initDashboard() { loadStats(); loadPending(); loadHistory(); loadWD(); loadWDDone(); }
+
+        function loadStats() {
+            db.collection("users").onSnapshot(snap => { document.getElementById('statKreator').innerText = snap.size; });
+            db.collection("submissions").where("status", "==", "approved").onSnapshot(snap => { document.getElementById('statKarya').innerText = snap.size; });
+        }
+
+        function loadPending() {
+            db.collection("submissions").where("status", "==", "pending").onSnapshot(snap => {
+                const div = document.getElementById("listPending"); div.innerHTML = "";
+                if(snap.empty) { div.innerHTML = "<p style='text-align:center;'>Hore! Tidak ada antrian validasi.</p>"; return; }
                 
-                let displayName = user.displayName || "Kreator";
-                document.getElementById('userName').innerText = displayName; 
-                document.getElementById('userPhoto').src = user.photoURL || (defaultAvatar + displayName);
-                
-                loadUserProfile(); loadSubmissions(); loadWDHistory(); loadLeaderboard(); checkPendingConfirmations();
-            } else {
-                document.getElementById('loadingScreen').style.display = 'none'; 
-                document.getElementById('loginScreen').style.display = 'flex'; 
-                document.getElementById('appScreen').style.display = 'none';
-            }
-        });
+                let dataList = []; snap.forEach(doc => dataList.push({ id: doc.id, ...doc.data() }));
+                dataList.sort((a, b) => { let tA = a.createdAt ? a.createdAt.seconds : 0; let tB = b.createdAt ? b.createdAt.seconds : 0; return tB - tA; });
 
-        // MANUAL AUTH LOGIC
-        function toggleAuth(mode) {
-            document.getElementById('formLogin').style.display = mode === 'login' ? 'block' : 'none';
-            document.getElementById('formRegister').style.display = mode === 'register' ? 'block' : 'none';
-        }
+                dataList.forEach(d => {
+                    const dateStr = d.createdAt ? new Date(d.createdAt.seconds * 1000).toLocaleString() : '-';
+                    let typeBadge = `<span class="badge" style="background:#E3F2FD; color:#1976D2;">KARYA BARU</span>`;
+                    let borderStyle = "card-pending"; let oldPtsText = "";
 
-        // FUNGSI LOGIN DENGAN PENGUNCIAN SESI (LOCAL PERSISTENCE)
-        function doLogin() {
-            const e = document.getElementById('loginEmail').value.trim(); const p = document.getElementById('loginPass').value;
-            if(!e || !p) return showToast("Isi email dan password!");
-            
-            document.getElementById('loadingScreen').style.display = 'flex';
-            
-            // Set agar login tersimpan secara lokal dan tidak hilang di-refresh
-            auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
-            .then(() => auth.signInWithEmailAndPassword(e, p))
-            .catch(err => {
-                document.getElementById('loadingScreen').style.display = 'none';
-                showDialog("Gagal Masuk", "Email atau Password salah. Silakan coba lagi.", null, true);
-            });
-        }
+                    if(d.isReval) {
+                        typeBadge = `<span class="badge" style="background:#FFF3E0; color:#FF9800;"><i class="fas fa-sync-alt"></i> REVISI NILAI</span>`;
+                        borderStyle = "card-reval"; oldPtsText = `<div style="font-size:0.8rem; color:#FF9800; font-weight:bold; margin-top:5px;">Poin Sebelumnya: ${d.pointsAwarded || 0}</div>`;
+                    }
 
-        // FUNGSI DAFTAR BARU (LANGSUNG ISI PROFIL)
-        function doRegister() {
-            const n = document.getElementById('regName').value.trim(); const e = document.getElementById('regEmail').value.trim(); const p = document.getElementById('regPass').value;
-            const nik = document.getElementById('regNIK').value.trim(); const wa = document.getElementById('regWA').value.trim();
-            const bank = document.getElementById('regBankName').value; const rek = document.getElementById('regBankNum').value.trim();
+                    let mul = d.savedMultiplier || 0;
+                    
+                    // FIX: AUTO KOREKSI LINK RELATIF MENJADI ABSOLUT UNTUK KURATOR
+                    let validLink = d.link;
+                    if (!validLink.match(/^https?:\/\//i)) { validLink = 'https://' + validLink; }
 
-            if(!n || !e || !p || !nik || !wa || !bank || !rek) return showToast("Mohon lengkapi seluruh data pendaftaran!");
-            if(p.length < 6) return showToast("Password minimal 6 karakter!");
-            
-            document.getElementById('loadingScreen').style.display = 'flex';
-            
-            auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
-            .then(() => auth.createUserWithEmailAndPassword(e, p))
-            .then((cred) => {
-                // Update Nama di Akun Firebase
-                cred.user.updateProfile({ displayName: n });
-                
-                // Langsung simpan semua data pendaftaran ke Database Profil
-                return db.collection("users").doc(cred.user.uid).set({ 
-                    name: n, email: e, photo: "", balance: 0, 
-                    nik: nik, whatsapp: wa, bankName: bank, bankNumber: rek,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp() 
-                });
-            })
-            .then(() => {
-                // Pendaftaran Sukses, Loading Screen akan otomatis tertutup oleh onAuthStateChanged
-                showToast("Pendaftaran Berhasil!");
-            })
-            .catch(err => {
-                document.getElementById('loadingScreen').style.display = 'none';
-                showDialog("Gagal Daftar", err.message, null, true);
-            });
-        }
-
-        function requestLogout() { showDialog("Keluar", "Yakin ingin keluar dari akun ini?", () => { document.getElementById('loadingScreen').style.display = 'flex'; auth.signOut().then(() => { window.location.reload(); }); }); }
-
-        // LEADERBOARD
-        function loadLeaderboard() {
-            db.collection("users").orderBy("balance", "desc").limit(7).onSnapshot(snap => {
-                const list = document.getElementById("leaderboardList"); list.innerHTML = ""; let rank = 1;
-                snap.forEach(doc => {
-                    const u = doc.data(); let rankClass = ""; let icon = `#${rank}`;
-                    if(rank === 1) { rankClass = "rank-1"; icon = "👑"; } if(rank === 2) { rankClass = "rank-2"; icon = "🥈"; } if(rank === 3) { rankClass = "rank-3"; icon = "🥉"; }
-                    let name = u.name || 'Anonim'; let ava = u.photo || (defaultAvatar + name);
-                    list.innerHTML += `<div class="leaderboard-card ${rankClass}"><div class="rank-num">${icon}</div><img src="${ava}" class="lb-avatar"><div class="lb-info"><div class="lb-name">${name}</div></div><div class="lb-points">${u.balance || 0} Poin</div></div>`;
-                    rank++;
-                });
-            });
-        }
-
-        // LOAD PROFILE (MENYEDOT DATA DARI PENDAFTARAN)
-        function loadUserProfile() {
-            db.collection("users").doc(currentUser.uid).onSnapshot(doc => {
-                let displayName = currentUser.displayName || "Kreator";
-                if(doc.exists) {
-                    userData = doc.data(); currentPoints = userData.balance || 0; document.getElementById('displayPoints').innerText = currentPoints;
-                    document.getElementById('profModalName').innerText = userData.name || displayName; 
-                    document.getElementById('profModalImg').src = userData.photo || (defaultAvatar + (userData.name || displayName));
-                    document.getElementById('userNIK').value = userData.nik || ""; document.getElementById('userWA').value = userData.whatsapp || "";
-                    document.getElementById('userBankName').value = userData.bankName || ""; document.getElementById('userBankNum').value = userData.bankNumber || "";
-                }
-            });
-        }
-
-        function saveProfile() {
-            const nik = document.getElementById('userNIK').value; const wa = document.getElementById('userWA').value; const bank = document.getElementById('userBankName').value; const num = document.getElementById('userBankNum').value;
-            if(!nik || !wa || !bank || !num) return showToast("Semua data wajib diisi!");
-            db.collection("users").doc(currentUser.uid).update({ nik: nik, whatsapp: wa, bankName: bank, bankNumber: num, lastUpdated: firebase.firestore.FieldValue.serverTimestamp() })
-            .then(() => { showToast("Profil disimpan!"); toggleModal('profileModal', false); });
-        }
-
-        function openProfile() { toggleModal('profileModal', true); }
-
-        // SUBMISSIONS (KARYA)
-        function loadSubmissions() {
-            db.collection("submissions").where("userId", "==", currentUser.uid).onSnapshot(snap => {
-                  const list = document.getElementById('submissionsList'); list.innerHTML = "";
-                  if(snap.empty) { list.innerHTML = "<p style='text-align:center; color:#ccc; margin-top:20px;'>Belum ada karya.</p>"; return; }
-                  
-                  let dataList = []; snap.forEach(doc => dataList.push({ id: doc.id, ...doc.data() }));
-                  dataList.sort((a, b) => { let tA = a.createdAt ? a.createdAt.seconds : 0; let tB = b.createdAt ? b.createdAt.seconds : 0; return tB - tA; });
-
-                  dataList.forEach(d => {
-                      let icon = 'fa-link'; let bg = '#333';
-                      if(d.platform == 'facebook') { icon = 'fa-facebook-f'; bg = '#1877F2'; } if(d.platform == 'tiktok') { icon = 'fa-tiktok'; bg = '#000'; }
-                      if(d.platform == 'instagram') { icon = 'fa-instagram'; bg = 'linear-gradient(45deg, #f09433, #bc1888)'; } if(d.platform == 'youtube') { icon = 'fa-youtube'; bg = '#FF0000'; }
-                      
-                      let badge = `<span class="status-badge badge-pending">Menunggu</span>`; let reevalBtn = '';
-                      if(d.status == 'approved') { 
-                          badge = `<span class="status-badge badge-approved">+${d.pointsAwarded} Poin</span>`; 
-                          reevalBtn = `<div style="margin-top:10px; padding-top:8px; border-top:1px dashed #eee; text-align:right;"><span onclick="triggerReeval('${d.id}')" style="color:var(--primary); font-size:0.75rem; font-weight:600; cursor:pointer; padding:5px 10px; background:#E8F5E9; border-radius:20px;"><i class="fas fa-sync-alt"></i> Ajukan Nilai Ulang</span></div>`;
-                      } else if(d.status == 'rejected') { 
-                          badge = `<span class="status-badge badge-rejected">Ditolak</span>`; 
-                          reevalBtn = `<div style="margin-top:10px; padding-top:8px; border-top:1px dashed #eee; text-align:right;"><span onclick="triggerReeval('${d.id}')" style="color:var(--danger); font-size:0.75rem; font-weight:600; cursor:pointer; padding:5px 10px; background:#FFEBEE; border-radius:20px;"><i class="fas fa-sync-alt"></i> Ajukan Banding</span></div>`;
-                      }
-
-                      list.innerHTML += `
-                        <div class="content-card">
-                            <div class="platform-icon" style="background:${bg}"><i class="fab ${icon}"></i></div>
-                            <div style="flex-grow:1; overflow:hidden;">
-                                ${badge}
-                                <div style="font-weight:600; font-size:0.9rem; margin-bottom:5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><a href="${d.link}" target="_blank" style="color:#1976D2; text-decoration:none;"><i class="fas fa-external-link-alt"></i> Buka Link Postingan</a></div>
-                                <div style="font-size:0.75rem; color:#888;">${d.createdAt ? new Date(d.createdAt.seconds * 1000).toLocaleDateString() : 'Baru saja'}</div>
-                                ${reevalBtn}
+                    div.innerHTML += `
+                        <div class="card ${borderStyle}">
+                            <div style="flex-grow:1;">
+                                <b>${d.userName}</b> ${typeBadge} <span class="badge">${d.platform.toUpperCase()}</span><br>
+                                <div style="font-size:0.8rem; color:#666; margin:2px 0;">${dateStr}</div>
+                                ${oldPtsText}
+                                <div style="margin-top:5px; margin-bottom:10px;">
+                                    <a href="${validLink}" target="_blank" style="font-size:0.9rem; color:#1976D2; text-decoration:none;"><i class="fas fa-external-link-alt"></i> Buka Postingan Asli</a>
+                                </div>
+                            </div>
+                            <div style="display:flex; flex-direction:column; gap:8px; min-width:120px;">
+                                <button class="btn btn-warning" style="padding:8px;" onclick="auditWA('${d.userId}', '${validLink}')"><i class="fab fa-whatsapp"></i> Audit via WA</button>
+                                <button class="btn" style="padding:8px;" onclick="openCalc('${d.id}', '${d.userId}', '${d.userName}', '${validLink}', ${d.pointsAwarded || 0}, ${mul})">Nilai Karya</button>
                             </div>
                         </div>`;
-                  });
-              });
+                });
+            });
         }
 
-        function loadWDHistory() {
-            db.collection("withdrawals").where("userId", "==", currentUser.uid).onSnapshot(snap => {
-                  const list = document.getElementById('wdHistoryList'); list.innerHTML = "";
-                  if(snap.empty) { list.innerHTML = "<p style='text-align:center; color:#ccc; margin-top:20px;'>Belum ada penarikan.</p>"; return; }
-                  let dataList = []; snap.forEach(doc => dataList.push({ id: doc.id, ...doc.data() }));
-                  dataList.sort((a, b) => { let tA = a.requestedAt ? a.requestedAt.seconds : 0; let tB = b.requestedAt ? b.requestedAt.seconds : 0; return tB - tA; });
-                  dataList.forEach(d => {
-                      let statusText = d.status == 'completed' ? `<span style="color:green; font-weight:bold;">Selesai</span>` : `<span style="color:#FF9800; font-weight:bold;">Diproses</span>`;
-                      list.innerHTML += `<div class="content-card" style="align-items:center;"><div style="background:#eee; padding:10px; border-radius:12px;"><i class="fas fa-wallet" style="color:var(--primary); font-size:1.5rem;"></i></div><div style="flex-grow:1;"><div style="font-weight:bold; font-size:1rem;">- ${d.amount} Poin</div><div style="font-size:0.8rem; color:#666;">${d.bankDetails}</div><div style="font-size:0.75rem; color:#aaa;">${d.requestedAt ? new Date(d.requestedAt.seconds * 1000).toLocaleDateString() : ''}</div></div><div>${statusText}</div></div>`;
-                  });
-              });
+        function auditWA(userId, link) {
+            db.collection("users").doc(userId).get().then(doc => {
+                if(doc.exists && doc.data().whatsapp) {
+                    let wa = doc.data().whatsapp.toString().replace(/\D/g,'');
+                    if(wa.startsWith('0')) wa = '62' + wa.substring(1);
+                    let msg = `Halo, kak. Saya dari Garda Creative Lab mau konfirmasi, apakah benar konten ini milik anda?\n\nLink: ${link}`;
+                    window.open(`https://wa.me/${wa}?text=${encodeURIComponent(msg)}`, '_blank');
+                } else { showDialog("Gagal", "Kreator ini belum mengisi nomor WhatsApp di profilnya.", null, true); }
+            }).catch(e => { showToast("Error mengambil data WA"); });
         }
 
-        function switchView(tab) {
-            document.getElementById('tabKarya').classList.remove('active'); document.getElementById('tabWd').classList.remove('active');
-            document.getElementById('submissionsList').classList.add('hidden'); document.getElementById('wdHistoryList').classList.add('hidden');
-            if(tab === 'karya') { document.getElementById('tabKarya').classList.add('active'); document.getElementById('submissionsList').classList.remove('hidden'); }
-            if(tab === 'wd') { document.getElementById('tabWd').classList.add('active'); document.getElementById('wdHistoryList').classList.remove('hidden'); }
+        function loadHistory() {
+            db.collection("submissions").where("status", "in", ["approved", "rejected"]).onSnapshot(snap => {
+                const div = document.getElementById("listHistory"); div.innerHTML = "";
+                if(snap.empty) { div.innerHTML = "<p style='text-align:center;'>Belum ada riwayat penilaian.</p>"; return; }
+                let dataList = []; snap.forEach(doc => dataList.push({ id: doc.id, ...doc.data() }));
+                dataList.sort((a, b) => { let tA = a.createdAt ? a.createdAt.seconds : 0; let tB = b.createdAt ? b.createdAt.seconds : 0; return tB - tA; });
+                let top50 = dataList.slice(0, 50);
+                
+                top50.forEach(d => {
+                    let badgeColor = d.status === 'approved' ? 'card-approved' : 'card-rejected';
+                    let statusText = d.status === 'approved' ? `<span class="badge badge-points">+${d.pointsAwarded} Poin</span>` : `<span class="badge" style="background:#FFEBEE; color:red;">Ditolak</span>`;
+                    let mul = d.savedMultiplier || 0;
+                    
+                    // FIX: KOREKSI LINK DI HISTORY KURATOR
+                    let validLink = d.link;
+                    if (!validLink.match(/^https?:\/\//i)) { validLink = 'https://' + validLink; }
+
+                    div.innerHTML += `<div class="card ${badgeColor}"><div style="flex-grow:1;"><b>${d.userName}</b> ${statusText}<br><a href="${validLink}" target="_blank" style="font-size:0.8rem; color:#1976D2; text-decoration:none;"><i class="fas fa-link"></i> Buka Konten</a></div><div><button class="btn btn-outline" style="width:auto; padding:5px 10px; font-size:0.8rem;" onclick="openCalc('${d.id}', '${d.userId}', '${d.userName}', '${validLink}', ${d.pointsAwarded || 0}, ${mul})"><i class="fas fa-edit"></i> Edit Nilai</button></div></div>`;
+                });
+            });
         }
 
-        // FITUR ANTI LINK GANDA
-        function submitKarya() {
-            const link = document.getElementById('inputLink').value.trim(); const platform = document.getElementById('inputPlatform').value;
-            if(!link) return showToast("Link tidak boleh kosong!");
+        function loadWD() {
+            db.collection("withdrawals").where("status", "in", ["pending", "transferred"]).onSnapshot(snap => {
+                const div = document.getElementById("listWd"); div.innerHTML = "";
+                if(snap.empty) { div.innerHTML = "<p style='text-align:center;'>Tidak ada antrian pencairan.</p>"; return; }
+                snap.forEach(doc => {
+                    const d = doc.data(); let cleanWA = d.userWa ? d.userWa.toString().replace(/\D/g,'') : ''; if(cleanWA.startsWith('0')) cleanWA = '62' + cleanWA.substring(1);
+                    const linkWA = `https://wa.me/${cleanWA}?text=${encodeURIComponent(`Halo, ${d.userName}, saya Kurator GCL. Penarikan Dana sebesar ${d.amount} Poin telah ditransfer, mohon cek dan klik tombol Terima di Aplikasi.`)}`;
+                    let action = d.status === "pending" ? `<button class="btn" style="background:#4CAF50;" onclick="markTransfer('${doc.id}', '${linkWA}')"><i class="fab fa-whatsapp"></i> Sudah Transfer</button>` : `<span style="color:green; font-size:0.8rem; font-weight:bold;">✅ Menunggu Kreator Terima</span>`;
+                    div.innerHTML += `<div class="card card-wd" style="display:block;"><div style="display:flex; justify-content:space-between; margin-bottom:10px;"><h3 style="color:var(--primary); margin:0;">${d.amount} Poin</h3><small>${d.status.toUpperCase()}</small></div><p style="margin:5px 0;"><b>${d.userName}</b> (NIK: ${d.userNik || '-'})</p><div style="background:#eee; padding:10px; border-radius:8px; font-size:0.9rem; margin-bottom:10px;">Bank: <b>${d.bankDetails}</b><br>WA: ${d.userWa}</div>${action}</div>`;
+                });
+            });
+        }
+
+        function loadWDDone() {
+            db.collection("withdrawals").where("status", "==", "completed").onSnapshot(snap => {
+                const div = document.getElementById("listWdDone"); div.innerHTML = "";
+                if(snap.empty) { div.innerHTML = "<p style='text-align:center;'>Belum ada histori selesai.</p>"; return; }
+                let dataList = []; snap.forEach(doc => dataList.push({ id: doc.id, ...doc.data() }));
+                dataList.sort((a, b) => { let tA = a.completedAt ? a.completedAt.seconds : 0; let tB = b.completedAt ? b.completedAt.seconds : 0; return tB - tA; });
+                let top50 = dataList.slice(0, 50);
+                top50.forEach(d => {
+                    div.innerHTML += `<div class="card" style="border-left-color:green; display:block;"><div style="display:flex; justify-content:space-between; margin-bottom:5px;"><h3 style="color:green; margin:0;">${d.amount} Poin</h3><small>${d.completedAt ? new Date(d.completedAt.seconds * 1000).toLocaleDateString() : ''}</small></div><p style="margin:0 0 5px 0;"><b>${d.userName}</b></p><div style="font-size:0.85rem; color:#666;">Ke: ${d.bankDetails}</div></div>`;
+                });
+            });
+        }
+
+        function markTransfer(docId, waLink) { showDialog("Konfirmasi Transfer", "Pastikan Anda sudah mentransfer uang via M-Banking. Lanjut update status?", () => { db.collection("withdrawals").doc(docId).update({ status: "transferred" }).then(() => { window.open(waLink, '_blank'); }); }); }
+
+        function openCalc(docId, userId, userName, link, currentPts, savedMult = 0) {
+            currentDocId = docId; currentUserId = userId; oldScore = currentPts; activeMultiplier = savedMult;
+            document.getElementById('c_views').value = ''; document.getElementById('c_likes').value = ''; document.getElementById('c_comments').value = '';
+            document.querySelectorAll('.c_crit').forEach(cb => cb.checked = false);
+            document.getElementById('calcKreatorName').innerText = userName; document.getElementById('calcLink').href = link;
             
-            document.getElementById('loadingScreen').style.display = 'flex';
-            
-            db.collection("submissions").where("link", "==", link).get().then((snap) => {
-                if(!snap.empty) {
-                    document.getElementById('loadingScreen').style.display = 'none';
-                    showDialog("Ditolak", "Link konten ini sudah pernah Anda atau orang lain submit sebelumnya!", null, true);
-                } else {
-                    let currentWA = userData.whatsapp || "";
-                    db.collection("submissions").add({ userId: currentUser.uid, userName: userData.name || currentUser.displayName, userWa: currentWA, platform: platform, link: link, status: "pending", createdAt: firebase.firestore.FieldValue.serverTimestamp(), pointsAwarded: 0 })
-                    .then(() => { 
-                        document.getElementById('loadingScreen').style.display = 'none';
-                        showToast("Karya terkirim!"); toggleModal('submitModal', false); document.getElementById('inputLink').value = ""; 
-                    });
-                }
-            }).catch(e => { document.getElementById('loadingScreen').style.display = 'none'; showToast("Error koneksi!"); });
+            if(activeMultiplier > 0) {
+                document.getElementById('critArea').style.display = 'none'; document.getElementById('lockedCritMsg').style.display = 'block';
+            } else {
+                document.getElementById('critArea').style.display = 'block'; document.getElementById('lockedCritMsg').style.display = 'none';
+            }
+
+            liveCalc(); document.getElementById('calcModal').style.display = 'flex';
         }
 
-        function triggerReeval(docId) { showDialog("Penilaian Ulang", "Apakah views/likes karya ini bertambah drastis? Ajukan penilaian ulang ke Kurator?", () => { db.collection("submissions").doc(docId).update({ status: "pending", isReval: true, revalRequestedAt: firebase.firestore.FieldValue.serverTimestamp() }).then(() => { showToast("Pengajuan ulang terkirim!"); }); }); }
-        
-        function requestRedeemCheck() { 
-            if(!userData.nik || !userData.bankNumber) { showToast("Mohon lengkapi profil dulu!"); openProfile(); return; } 
-            document.getElementById('redeemTarget').innerText = `${userData.bankName} - ${userData.bankNumber}`; toggleModal('redeemModal', true); 
-        }
-        
-        function processRedeem() {
-            const amount = parseInt(document.getElementById('redeemAmount').value); if(amount < 150) return showToast("Minimal 150 Poin!"); if(amount > currentPoints) return showToast("Saldo tidak cukup!");
-            db.collection("users").doc(currentUser.uid).update({ balance: firebase.firestore.FieldValue.increment(-amount) });
-            db.collection("withdrawals").add({ userId: currentUser.uid, userName: userData.name, userNik: userData.nik, userWa: userData.whatsapp, amount: amount, bankDetails: `${userData.bankName} - ${userData.bankNumber}`, status: "pending", requestedAt: firebase.firestore.FieldValue.serverTimestamp() })
-            .then(() => { showToast("Permintaan diajukan!"); toggleModal('redeemModal', false); switchView('wd'); });
+        function closeModal() { document.getElementById('calcModal').style.display = 'none'; }
+
+        function liveCalc() {
+            let v = parseInt(document.getElementById('c_views').value) || 0; let l = parseInt(document.getElementById('c_likes').value) || 0; let c = parseInt(document.getElementById('c_comments').value) || 0;
+            let baseScore = (v * 0.01) + (l * 0.012) + (c * 0.015);
+            let m = activeMultiplier;
+            const warn = document.getElementById('c_warning');
+
+            if (activeMultiplier === 0) {
+                let tempM = 0; let checkedCount = 0;
+                document.querySelectorAll('.c_crit:checked').forEach(cb => { tempM += parseInt(cb.value); checkedCount++; });
+                if(tempM === 0) tempM = 1; 
+                
+                if(checkedCount < 2) { m = tempM / 10; warn.style.display = 'block'; } else { m = tempM; warn.style.display = 'none'; }
+                currentCalculatedMultiplier = m; 
+            } else { warn.style.display = 'none'; currentCalculatedMultiplier = activeMultiplier; }
+
+            let finalScore = baseScore * currentCalculatedMultiplier;
+            document.getElementById('c_result').innerText = Math.round(finalScore);
         }
 
-        function checkPendingConfirmations() { db.collection("withdrawals").where("userId", "==", currentUser.uid).where("status", "==", "transferred").onSnapshot(snap => { if(!snap.empty) { const doc = snap.docs[0]; pendingWithdrawalId = doc.id; document.getElementById('confirmBank').innerText = doc.data().bankDetails; document.getElementById('profileNotif').style.display = 'block'; toggleModal('confirmModal', true); } else { document.getElementById('profileNotif').style.display = 'none'; } }); }
-        function confirmReceipt() { if(!pendingWithdrawalId) return; db.collection("withdrawals").doc(pendingWithdrawalId).update({ status: "completed", completedAt: firebase.firestore.FieldValue.serverTimestamp() }).then(() => { showToast("Selesai. Terima kasih!"); toggleModal('confirmModal', false); switchView('wd'); }); }
+        function submitGrade(newStatus) {
+            let finalPoints = parseInt(document.getElementById('c_result').innerText) || 0;
+            if (newStatus === 'rejected') { finalPoints = 0; currentCalculatedMultiplier = 0; }
+            let delta = finalPoints - oldScore;
 
-        function toggleModal(id, show) { document.getElementById(id).style.display = show ? 'flex' : 'none'; }
-        function showToast(msg) { const t = document.getElementById('gclToast'); document.getElementById('toastMsg').innerText = msg; t.classList.add('active'); setTimeout(() => t.classList.remove('active'), 3000); }
-        
+            db.collection("submissions").doc(currentDocId).update({
+                status: newStatus, pointsAwarded: finalPoints, savedMultiplier: currentCalculatedMultiplier, isReval: false, evaluatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+                if(delta !== 0) { return db.collection("users").doc(currentUserId).update({ balance: firebase.firestore.FieldValue.increment(delta) }); }
+            }).then(() => {
+                closeModal(); showToast(`Selesai! Saldo disesuaikan (${delta > 0 ? '+'+delta : delta} Poin).`);
+            }).catch(e => showDialog("Error", e.message, null, true));
+        }
+
+        function switchTab(tab) { document.getElementById('panel-pending').classList.add('hidden'); document.getElementById('panel-history').classList.add('hidden'); document.getElementById('panel-wd').classList.add('hidden'); document.getElementById('panel-wd-done').classList.add('hidden'); document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); document.getElementById('panel-'+tab).classList.remove('hidden'); event.target.classList.add('active'); }
+        function showToast(msg) { const t = document.getElementById('toast'); t.innerText = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
         function showDialog(title, msg, onConfirm, isAlert = false) {
             document.getElementById('dTitle').innerText = title; document.getElementById('dMsg').innerText = msg; document.getElementById('gclDialog').style.display = 'flex';
             if(isAlert) { document.getElementById('dBtnCancel').style.display = 'none'; document.getElementById('dBtnOk').innerText = 'Tutup'; } else { document.getElementById('dBtnCancel').style.display = 'block'; document.getElementById('dBtnOk').innerText = 'YA'; }
