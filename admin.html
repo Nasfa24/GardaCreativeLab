@@ -31,7 +31,6 @@
         .stat-box:nth-child(2) .stat-num { color: #F57C00; }
         .stat-label { font-size: 0.85rem; color: #666; font-weight: 600; text-transform: uppercase; }
         
-        /* SCROLLABLE TABS */
         .tabs-wrapper { overflow-x: auto; white-space: nowrap; margin-bottom: 20px; padding-bottom: 5px; }
         .tabs { display: inline-flex; gap: 10px; }
         .tab { padding: 10px 20px; background: white; border-radius: 30px; cursor: pointer; font-weight: 600; font-size: 0.9rem; color: #666; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
@@ -57,7 +56,6 @@
         .result-box { background: var(--primary); color: white; padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 20px; }
         .result-points { font-size: 2.5rem; font-weight: 800; color: var(--secondary); line-height: 1; margin: 10px 0; }
         
-        /* CUSTOM CONFIRM/ALERT BOX */
         .gcl-dialog { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 99999; display: none; align-items: center; justify-content: center; }
         .dialog-box { background: white; width: 85%; max-width: 350px; border-radius: 20px; padding: 25px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: popIn 0.3s ease-out; }
         @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
@@ -179,8 +177,7 @@
         firebase.initializeApp(firebaseConfig); const db = firebase.firestore();
 
         let currentDocId = null; let currentUserId = null; let oldScore = 0;
-        let activeMultiplier = 0; // MENYIMPAN NILAI MULTIPLIER (UNTUK REVISI)
-        let currentCalculatedMultiplier = 0; // MULTIPLIER YG SEDANG DIHITUNG
+        let activeMultiplier = 0; let currentCalculatedMultiplier = 0;
 
         window.onload = function() { if (sessionStorage.getItem('gclAdminLoggedIn') === 'true') { document.getElementById('loginOverlay').style.display = 'none'; document.getElementById('dashboard').style.display = 'block'; initDashboard(); } };
 
@@ -194,7 +191,6 @@
             db.collection("submissions").where("status", "==", "approved").onSnapshot(snap => { document.getElementById('statKarya').innerText = snap.size; });
         }
 
-        // LOAD PENDING (TAMBAH TOMBOL AUDIT WA)
         function loadPending() {
             db.collection("submissions").where("status", "==", "pending").onSnapshot(snap => {
                 const div = document.getElementById("listPending"); div.innerHTML = "";
@@ -210,12 +206,14 @@
 
                     if(d.isReval) {
                         typeBadge = `<span class="badge" style="background:#FFF3E0; color:#FF9800;"><i class="fas fa-sync-alt"></i> REVISI NILAI</span>`;
-                        borderStyle = "card-reval"; 
-                        oldPtsText = `<div style="font-size:0.8rem; color:#FF9800; font-weight:bold; margin-top:5px;">Poin Sebelumnya: ${d.pointsAwarded || 0}</div>`;
+                        borderStyle = "card-reval"; oldPtsText = `<div style="font-size:0.8rem; color:#FF9800; font-weight:bold; margin-top:5px;">Poin Sebelumnya: ${d.pointsAwarded || 0}</div>`;
                     }
 
-                    // PASS d.savedMultiplier ke openCalc
                     let mul = d.savedMultiplier || 0;
+                    
+                    // FIX: AUTO KOREKSI LINK RELATIF MENJADI ABSOLUT UNTUK KURATOR
+                    let validLink = d.link;
+                    if (!validLink.match(/^https?:\/\//i)) { validLink = 'https://' + validLink; }
 
                     div.innerHTML += `
                         <div class="card ${borderStyle}">
@@ -224,19 +222,18 @@
                                 <div style="font-size:0.8rem; color:#666; margin:2px 0;">${dateStr}</div>
                                 ${oldPtsText}
                                 <div style="margin-top:5px; margin-bottom:10px;">
-                                    <a href="${d.link}" target="_blank" style="font-size:0.9rem; color:#1976D2; text-decoration:none;"><i class="fas fa-external-link-alt"></i> Buka Postingan Asli</a>
+                                    <a href="${validLink}" target="_blank" style="font-size:0.9rem; color:#1976D2; text-decoration:none;"><i class="fas fa-external-link-alt"></i> Buka Postingan Asli</a>
                                 </div>
                             </div>
                             <div style="display:flex; flex-direction:column; gap:8px; min-width:120px;">
-                                <button class="btn btn-warning" style="padding:8px;" onclick="auditWA('${d.userId}', '${d.link}')"><i class="fab fa-whatsapp"></i> Audit via WA</button>
-                                <button class="btn" style="padding:8px;" onclick="openCalc('${d.id}', '${d.userId}', '${d.userName}', '${d.link}', ${d.pointsAwarded || 0}, ${mul})">Nilai Karya</button>
+                                <button class="btn btn-warning" style="padding:8px;" onclick="auditWA('${d.userId}', '${validLink}')"><i class="fab fa-whatsapp"></i> Audit via WA</button>
+                                <button class="btn" style="padding:8px;" onclick="openCalc('${d.id}', '${d.userId}', '${d.userName}', '${validLink}', ${d.pointsAwarded || 0}, ${mul})">Nilai Karya</button>
                             </div>
                         </div>`;
                 });
             });
         }
 
-        // FUNGSI AUDIT WA
         function auditWA(userId, link) {
             db.collection("users").doc(userId).get().then(doc => {
                 if(doc.exists && doc.data().whatsapp) {
@@ -255,11 +252,17 @@
                 let dataList = []; snap.forEach(doc => dataList.push({ id: doc.id, ...doc.data() }));
                 dataList.sort((a, b) => { let tA = a.createdAt ? a.createdAt.seconds : 0; let tB = b.createdAt ? b.createdAt.seconds : 0; return tB - tA; });
                 let top50 = dataList.slice(0, 50);
+                
                 top50.forEach(d => {
                     let badgeColor = d.status === 'approved' ? 'card-approved' : 'card-rejected';
                     let statusText = d.status === 'approved' ? `<span class="badge badge-points">+${d.pointsAwarded} Poin</span>` : `<span class="badge" style="background:#FFEBEE; color:red;">Ditolak</span>`;
                     let mul = d.savedMultiplier || 0;
-                    div.innerHTML += `<div class="card ${badgeColor}"><div style="flex-grow:1;"><b>${d.userName}</b> ${statusText}<br><a href="${d.link}" target="_blank" style="font-size:0.8rem; color:#1976D2; text-decoration:none;"><i class="fas fa-link"></i> Buka Konten</a></div><div><button class="btn btn-outline" style="width:auto; padding:5px 10px; font-size:0.8rem;" onclick="openCalc('${d.id}', '${d.userId}', '${d.userName}', '${d.link}', ${d.pointsAwarded || 0}, ${mul})"><i class="fas fa-edit"></i> Edit Nilai</button></div></div>`;
+                    
+                    // FIX: KOREKSI LINK DI HISTORY KURATOR
+                    let validLink = d.link;
+                    if (!validLink.match(/^https?:\/\//i)) { validLink = 'https://' + validLink; }
+
+                    div.innerHTML += `<div class="card ${badgeColor}"><div style="flex-grow:1;"><b>${d.userName}</b> ${statusText}<br><a href="${validLink}" target="_blank" style="font-size:0.8rem; color:#1976D2; text-decoration:none;"><i class="fas fa-link"></i> Buka Konten</a></div><div><button class="btn btn-outline" style="width:auto; padding:5px 10px; font-size:0.8rem;" onclick="openCalc('${d.id}', '${d.userId}', '${d.userName}', '${validLink}', ${d.pointsAwarded || 0}, ${mul})"><i class="fas fa-edit"></i> Edit Nilai</button></div></div>`;
                 });
             });
         }
@@ -277,7 +280,6 @@
             });
         }
 
-        // LOAD WD SELESAI (HISTORI KURATOR)
         function loadWDDone() {
             db.collection("withdrawals").where("status", "==", "completed").onSnapshot(snap => {
                 const div = document.getElementById("listWdDone"); div.innerHTML = "";
@@ -299,13 +301,10 @@
             document.querySelectorAll('.c_crit').forEach(cb => cb.checked = false);
             document.getElementById('calcKreatorName').innerText = userName; document.getElementById('calcLink').href = link;
             
-            // LOGIKA PENGUNCIAN KRITERIA
             if(activeMultiplier > 0) {
-                document.getElementById('critArea').style.display = 'none';
-                document.getElementById('lockedCritMsg').style.display = 'block';
+                document.getElementById('critArea').style.display = 'none'; document.getElementById('lockedCritMsg').style.display = 'block';
             } else {
-                document.getElementById('critArea').style.display = 'block';
-                document.getElementById('lockedCritMsg').style.display = 'none';
+                document.getElementById('critArea').style.display = 'block'; document.getElementById('lockedCritMsg').style.display = 'none';
             }
 
             liveCalc(); document.getElementById('calcModal').style.display = 'flex';
@@ -320,19 +319,13 @@
             const warn = document.getElementById('c_warning');
 
             if (activeMultiplier === 0) {
-                // Kalkulasi Baru (Kriteria Terbuka)
                 let tempM = 0; let checkedCount = 0;
                 document.querySelectorAll('.c_crit:checked').forEach(cb => { tempM += parseInt(cb.value); checkedCount++; });
                 if(tempM === 0) tempM = 1; 
                 
-                if(checkedCount < 2) { m = tempM / 10; warn.style.display = 'block'; } 
-                else { m = tempM; warn.style.display = 'none'; }
-                currentCalculatedMultiplier = m; // Simpan untuk disubmit
-            } else {
-                // Revisi (Pakai nilai pengali lama yg terkunci)
-                warn.style.display = 'none';
-                currentCalculatedMultiplier = activeMultiplier;
-            }
+                if(checkedCount < 2) { m = tempM / 10; warn.style.display = 'block'; } else { m = tempM; warn.style.display = 'none'; }
+                currentCalculatedMultiplier = m; 
+            } else { warn.style.display = 'none'; currentCalculatedMultiplier = activeMultiplier; }
 
             let finalScore = baseScore * currentCalculatedMultiplier;
             document.getElementById('c_result').innerText = Math.round(finalScore);
@@ -344,11 +337,7 @@
             let delta = finalPoints - oldScore;
 
             db.collection("submissions").doc(currentDocId).update({
-                status: newStatus,
-                pointsAwarded: finalPoints,
-                savedMultiplier: currentCalculatedMultiplier, // SIMPAN MULTIPLIER
-                isReval: false, 
-                evaluatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                status: newStatus, pointsAwarded: finalPoints, savedMultiplier: currentCalculatedMultiplier, isReval: false, evaluatedAt: firebase.firestore.FieldValue.serverTimestamp()
             }).then(() => {
                 if(delta !== 0) { return db.collection("users").doc(currentUserId).update({ balance: firebase.firestore.FieldValue.increment(delta) }); }
             }).then(() => {
@@ -358,12 +347,9 @@
 
         function switchTab(tab) { document.getElementById('panel-pending').classList.add('hidden'); document.getElementById('panel-history').classList.add('hidden'); document.getElementById('panel-wd').classList.add('hidden'); document.getElementById('panel-wd-done').classList.add('hidden'); document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); document.getElementById('panel-'+tab).classList.remove('hidden'); event.target.classList.add('active'); }
         function showToast(msg) { const t = document.getElementById('toast'); t.innerText = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
-        
         function showDialog(title, msg, onConfirm, isAlert = false) {
-            document.getElementById('dTitle').innerText = title; document.getElementById('dMsg').innerText = msg;
-            document.getElementById('gclDialog').style.display = 'flex';
-            if(isAlert) { document.getElementById('dBtnCancel').style.display = 'none'; document.getElementById('dBtnOk').innerText = 'Tutup'; } 
-            else { document.getElementById('dBtnCancel').style.display = 'block'; document.getElementById('dBtnOk').innerText = 'YA'; }
+            document.getElementById('dTitle').innerText = title; document.getElementById('dMsg').innerText = msg; document.getElementById('gclDialog').style.display = 'flex';
+            if(isAlert) { document.getElementById('dBtnCancel').style.display = 'none'; document.getElementById('dBtnOk').innerText = 'Tutup'; } else { document.getElementById('dBtnCancel').style.display = 'block'; document.getElementById('dBtnOk').innerText = 'YA'; }
             document.getElementById('dBtnOk').onclick = function() { closeDialog(); if(onConfirm) onConfirm(); };
         }
         function closeDialog() { document.getElementById('gclDialog').style.display = 'none'; }
