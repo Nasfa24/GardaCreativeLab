@@ -6,7 +6,6 @@
     <title>GCL - Akademi Kreator</title>
     
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%2303754c%22/><text x=%2250%22 y=%2270%22 font-family=%22Arial, sans-serif%22 font-size=%2270%22 font-weight=%22bold%22 fill=%22white%22 text-anchor=%22middle%22>G</text></svg>">
-    
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -15,88 +14,39 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 
     <style>
-        :root {
-            --primary: #03754c; --primary-dark: #025436; --secondary: #FFC107; 
-            --accent: #00E676; --danger: #FF5252; --bg-body: #F5F7FA; 
-            --text-main: #1A233A; --radius: 16px;
-        }
-
+        :root { --primary: #03754c; --primary-dark: #025436; --secondary: #FFC107; --accent: #00E676; --danger: #FF5252; --bg-body: #F5F7FA; --text-main: #1A233A; --radius: 16px; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body { background-color: var(--bg-body); color: var(--text-main); padding-bottom: 100px; -webkit-tap-highlight-color: transparent; }
 
-        /* LOADING SCREEN */
-        #loadingScreen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-body); z-index: 10000;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
-        .loader {
-            width: 40px; height: 40px; border: 4px solid #ddd;
-            border-top: 4px solid var(--primary); border-radius: 50%;
-            animation: spin 1s linear infinite; margin-bottom: 15px;
-        }
+        /* LOADING & LOGIN SCREEN */
+        #loadingScreen, #loginScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        #loadingScreen { background: var(--bg-body); }
+        #loginScreen { background: var(--primary); display: none; color: white; padding: 30px; text-align: center; }
+        .loader { width: 40px; height: 40px; border: 4px solid #ddd; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .login-btn { background: white; color: var(--text-main); padding: 12px 25px; border-radius: 30px; font-weight: 700; margin-top: 20px; display: flex; align-items: center; gap: 10px; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
 
-        /* LOGIN SCREEN */
-        #loginScreen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--primary); z-index: 9999; display: none;
-            flex-direction: column; align-items: center; justify-content: center;
-            padding: 30px; text-align: center; color: white;
-        }
-        .login-btn {
-            background: white; color: var(--text-main); padding: 12px 25px;
-            border-radius: 30px; font-weight: 700; margin-top: 20px;
-            display: flex; align-items: center; gap: 10px; cursor: pointer;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2); transition: transform 0.2s;
-        }
-        .login-btn:active { transform: scale(0.95); }
-
-        /* APP SCREEN */
+        /* APP SCREEN & HEADER */
         #appScreen { display: none; }
-
-        /* HEADER */
-        .header {
-            background-color: var(--primary); padding: 30px 20px 90px 20px;
-            border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; color: white;
-        }
+        .header { background-color: var(--primary); padding: 30px 20px 90px 20px; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; color: white; }
         .header-top { display: flex; justify-content: space-between; align-items: center; }
         .user-profile { display: flex; align-items: center; gap: 10px; cursor: pointer; }
         .user-avatar { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--secondary); object-fit: cover; }
 
         /* POIN CARD */
-        .poin-card {
-            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
-            margin: -70px 20px 20px 20px; padding: 25px; border-radius: var(--radius);
-            box-shadow: 0 10px 25px rgba(3, 117, 76, 0.25); color: white;
-            display: flex; justify-content: space-between; align-items: center;
-            position: relative; overflow: hidden;
-        }
-        .poin-card::after {
-            content: ''; position: absolute; top: -30px; right: -30px; width: 100px; height: 100px;
-            background: var(--accent); opacity: 0.15; border-radius: 50%;
-        }
+        .poin-card { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); margin: -70px 20px 20px 20px; padding: 25px; border-radius: var(--radius); box-shadow: 0 10px 25px rgba(3, 117, 76, 0.25); color: white; display: flex; justify-content: space-between; align-items: center; position: relative; overflow: hidden; }
+        .poin-card::after { content: ''; position: absolute; top: -30px; right: -30px; width: 100px; height: 100px; background: var(--accent); opacity: 0.15; border-radius: 50%; }
         .poin-value { font-size: 2.2rem; font-weight: 700; color: var(--secondary); line-height: 1; }
-        .btn-redeem {
-            background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 30px;
-            color: white; text-decoration: none; font-size: 0.8rem; font-weight: 600;
-            backdrop-filter: blur(5px); cursor: pointer; border: 1px solid rgba(255,255,255,0.3);
-        }
+        .btn-redeem { background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 30px; color: white; text-decoration: none; font-size: 0.8rem; font-weight: 600; cursor: pointer; border: 1px solid rgba(255,255,255,0.3); }
 
         /* LEADERBOARD */
         .leaderboard-area { padding: 0 20px; margin-bottom: 25px; }
-        .leaderboard-card {
-            background: white; border-radius: 12px; padding: 10px 15px; margin-bottom: 10px;
-            display: flex; align-items: center; gap: 15px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid #f0f0f0;
-        }
+        .leaderboard-card { background: white; border-radius: 12px; padding: 10px 15px; margin-bottom: 10px; display: flex; align-items: center; gap: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid #f0f0f0; }
         .rank-1 { background: linear-gradient(45deg, #FFF9C4, #FFFFFF); border: 1px solid #FFD54F; transform: scale(1.02); }
         .rank-2 { background: linear-gradient(45deg, #F5F5F5, #FFFFFF); border: 1px solid #E0E0E0; }
         .rank-3 { background: linear-gradient(45deg, #FFE0B2, #FFFFFF); border: 1px solid #FFCC80; }
         .rank-num { font-size: 1.2rem; font-weight: 700; width: 30px; text-align: center; color: #888; }
-        .rank-1 .rank-num { color: #FFC107; text-shadow: 0 2px 0 rgba(0,0,0,0.1); font-size: 1.5rem; }
-        .rank-2 .rank-num { color: #9E9E9E; }
-        .rank-3 .rank-num { color: #D84315; }
+        .rank-1 .rank-num { color: #FFC107; font-size: 1.5rem; } .rank-2 .rank-num { color: #9E9E9E; } .rank-3 .rank-num { color: #D84315; }
         .lb-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
         .lb-info { flex-grow: 1; }
         .lb-name { font-weight: 600; font-size: 0.9rem; color: var(--text-main); }
@@ -104,63 +54,43 @@
 
         /* CONTENT LIST */
         .content-area { padding: 0 20px; }
-        .content-card {
-            background: white; border-radius: var(--radius); padding: 15px; margin-bottom: 15px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; gap: 15px; position: relative;
-        }
-        .platform-icon {
-            width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
-            font-size: 1.4rem; flex-shrink: 0; color: white;
-        }
-        .icon-tiktok { background: #000; } 
-        .icon-instagram { background: linear-gradient(45deg, #f09433, #bc1888); }
-        .icon-facebook { background: #1877F2; }
-        .icon-youtube { background: #FF0000; }
+        .content-card { background: white; border-radius: var(--radius); padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; gap: 15px; position: relative; }
+        .platform-icon { width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; color: white; }
+        .icon-tiktok { background: #000; } .icon-instagram { background: linear-gradient(45deg, #f09433, #bc1888); } .icon-facebook { background: #1877F2; } .icon-youtube { background: #FF0000; }
         .status-badge { font-size: 0.7rem; padding: 4px 8px; border-radius: 6px; font-weight: 600; position: absolute; top: 15px; right: 15px; }
-        .badge-pending { background: #FFF3E0; color: #FF9800; }
-        .badge-approved { background: #E8F5E9; color: var(--primary); }
-        .badge-rejected { background: #FFEBEE; color: var(--danger); }
+        .badge-pending { background: #FFF3E0; color: #FF9800; } .badge-approved { background: #E8F5E9; color: var(--primary); } .badge-rejected { background: #FFEBEE; color: var(--danger); }
 
-        /* FAB */
-        .fab { position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; background: var(--accent); color: var(--primary-dark); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; box-shadow: 0 4px 20px rgba(0, 230, 118, 0.4); cursor: pointer; z-index: 90; transition: transform 0.2s; }
-        .fab:active { transform: scale(0.9); }
-
-        /* MODALS */
+        /* FAB & MODALS */
+        .fab { position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; background: var(--accent); color: var(--primary-dark); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; box-shadow: 0 4px 20px rgba(0, 230, 118, 0.4); cursor: pointer; z-index: 90; }
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 200; display: none; align-items: flex-end; }
         .modal-content { background: white; width: 100%; border-top-left-radius: 25px; border-top-right-radius: 25px; padding: 30px 25px; animation: slideUp 0.3s ease-out; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-
         .form-label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 5px; margin-top: 15px; }
         .form-input { width: 100%; padding: 12px; border: 2px solid #EEE; border-radius: 12px; font-size: 1rem; outline: none; background: #fff; }
-        .form-input:focus { border-color: var(--primary); }
         .btn-submit { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; margin-top: 20px; }
 
         /* PROFILE MODAL */
         .profile-modal-content { background: #F5F7FA; width: 100%; border-radius: 25px 25px 0 0; padding: 0; overflow-y: auto; max-height: 90vh; position: relative; animation: slideUp 0.3s ease-out; }
         .profile-cover { height: 120px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); position: relative; }
-        .profile-avatar-large { width: 100px; height: 100px; border-radius: 50%; border: 4px solid white; position: absolute; bottom: -50px; left: 50%; transform: translateX(-50%); background: white; object-fit: cover; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .profile-avatar-large { width: 100px; height: 100px; border-radius: 50%; border: 4px solid white; position: absolute; bottom: -50px; left: 50%; transform: translateX(-50%); background: white; object-fit: cover; }
         .profile-info { margin-top: 60px; padding: 20px; text-align: center; }
         .profile-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; margin-bottom: 20px; }
 
         /* TOAST */
-        .gcl-toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 12px 20px; border-radius: 50px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 12px; z-index: 9999; transition: all 0.4s; min-width: 280px; border: 1px solid rgba(0,0,0,0.05); }
+        .gcl-toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: rgba(255,255,255,0.95); padding: 12px 20px; border-radius: 50px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 12px; z-index: 9999; transition: all 0.4s; }
         .gcl-toast.active { transform: translateX(-50%) translateY(0); }
         .notif-dot { width: 10px; height: 10px; background: red; border-radius: 50%; border: 2px solid var(--primary); position: absolute; top: 0; right: 0; display: none; }
     </style>
 </head>
 <body>
 
-    <div id="loadingScreen">
-        <div class="loader"></div>
-        <p style="font-size:0.9rem; color:#666;">Memuat GCL...</p>
-    </div>
+    <div id="loadingScreen"><div class="loader"></div><p style="font-size:0.9rem; color:#666;">Memuat GCL...</p></div>
 
     <div id="loginScreen">
         <h1 style="margin-bottom:5px;">Garda Creative Lab</h1>
         <p style="opacity:0.8; font-size:0.9rem; margin-bottom:30px;">Platform Kreator Masa Depan</p>
         <div class="login-btn" onclick="googleLogin()">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20">
-            Masuk dengan Google
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20"> Masuk dengan Google
         </div>
         <p style="font-size:0.75rem; margin-top:20px; opacity:0.7;">Jika muncul peringatan, pilih <b>"Allow" / "Izinkan"</b>.</p>
     </div>
@@ -170,32 +100,21 @@
             <div class="header-top">
                 <div class="user-profile" onclick="openProfile()">
                     <div style="position:relative;">
-                        <img id="userPhoto" src="" class="user-avatar">
-                        <div class="notif-dot" id="profileNotif"></div>
+                        <img id="userPhoto" src="" class="user-avatar"><div class="notif-dot" id="profileNotif"></div>
                     </div>
-                    <div>
-                        <div class="user-name" id="userName" style="font-weight:700;">Loading...</div>
-                        <div style="font-size:0.75rem; opacity:0.8;">Klik untuk Profil</div>
-                    </div>
+                    <div><div class="user-name" id="userName" style="font-weight:700;">Loading...</div><div style="font-size:0.75rem; opacity:0.8;">Klik untuk Profil</div></div>
                 </div>
             </div>
         </div>
 
         <div class="poin-card">
-            <div>
-                <div style="font-size:0.8rem; opacity:0.9;">Saldo Poin</div>
-                <div class="poin-value" id="displayPoints">0</div>
-            </div>
+            <div><div style="font-size:0.8rem; opacity:0.9;">Saldo Poin</div><div class="poin-value" id="displayPoints">0</div></div>
             <div class="btn-redeem" onclick="requestRedeemCheck()">Tukar Uang</div>
         </div>
 
         <div class="leaderboard-area">
-            <h3 style="font-size:1rem; font-weight:700; margin-bottom:15px; color:var(--primary);">
-                <i class="fas fa-trophy"></i> Top Kreator
-            </h3>
-            <div id="leaderboardList">
-                <p style="text-align:center; color:#ccc; font-size:0.8rem;">Memuat Peringkat...</p>
-            </div>
+            <h3 style="font-size:1rem; font-weight:700; margin-bottom:15px; color:var(--primary);"><i class="fas fa-trophy"></i> Top Kreator</h3>
+            <div id="leaderboardList"><p style="text-align:center; color:#ccc; font-size:0.8rem;">Memuat Peringkat...</p></div>
         </div>
 
         <div class="content-area">
@@ -203,9 +122,7 @@
                 <h3 style="font-size:1rem; font-weight:700;">Riwayat Karya</h3>
                 <small onclick="loadData()" style="color:var(--primary); cursor:pointer;"><i class="fas fa-sync-alt"></i> Refresh</small>
             </div>
-            <div id="submissionsList">
-                <p style="text-align:center; color:#ccc; margin-top:20px;">Memuat data...</p>
-            </div>
+            <div id="submissionsList"><p style="text-align:center; color:#ccc; margin-top:20px;">Memuat data...</p></div>
         </div>
         <div class="fab" onclick="toggleModal('submitModal', true)"><i class="fas fa-plus"></i></div>
     </div>
@@ -215,10 +132,7 @@
             <h2 style="font-size:1.2rem; margin-bottom:20px;">Submit Karya</h2>
             <label class="form-label">Platform</label>
             <select id="inputPlatform" class="form-input">
-                <option value="tiktok">TikTok</option>
-                <option value="instagram">Instagram</option>
-                <option value="youtube">Youtube</option>
-                <option value="facebook">Facebook</option>
+                <option value="tiktok">TikTok</option><option value="instagram">Instagram</option><option value="youtube">Youtube</option><option value="facebook">Facebook</option>
             </select>
             <label class="form-label">Link Postingan</label>
             <input type="text" id="inputLink" class="form-input" placeholder="Paste Link di sini...">
@@ -233,9 +147,7 @@
             <p style="font-size:0.8rem; color:#666; margin-bottom:20px;">Min. 150 Poin (Rp 50.000)</p>
             <label class="form-label">Jumlah Poin</label>
             <input type="number" id="redeemAmount" class="form-input" placeholder="Minimal 150">
-            <div style="background:#F5F7FA; padding:10px; border-radius:8px; margin-top:10px; font-size:0.85rem;">
-                Transfer ke:<br><b id="redeemTarget">...</b>
-            </div>
+            <div style="background:#F5F7FA; padding:10px; border-radius:8px; margin-top:10px; font-size:0.85rem;">Transfer ke:<br><b id="redeemTarget">...</b></div>
             <button class="btn-submit" style="background:var(--secondary); color:black;" onclick="processRedeem()">Ajukan</button>
             <div style="text-align:center; margin-top:15px; color:#888;" onclick="toggleModal('redeemModal', false)">Batal</div>
         </div>
@@ -245,39 +157,27 @@
         <div class="profile-modal-content">
             <div class="profile-cover">
                 <img id="profModalImg" src="" class="profile-avatar-large">
-                <div style="position: absolute; top: 15px; right: 20px; color: white; cursor: pointer;" onclick="toggleModal('profileModal', false)">
-                    <i class="fas fa-times" style="font-size: 1.5rem;"></i>
-                </div>
+                <div style="position: absolute; top: 15px; right: 20px; color: white; cursor: pointer;" onclick="toggleModal('profileModal', false)"><i class="fas fa-times" style="font-size: 1.5rem;"></i></div>
             </div>
             <div class="profile-info">
                 <div class="profile-name" id="profModalName">...</div>
                 <div class="profile-badge" id="badgeVerif" style="background:#eee; color:#666;">Belum Terverifikasi</div>
                 <div style="text-align:left; margin-top:10px;">
                     <h4 style="color:var(--primary); border-bottom:2px solid #eee; padding-bottom:5px; margin-bottom:15px;">Data Kreator (Wajib)</h4>
-                    <label class="form-label">NIK (KTP)</label>
-                    <input type="number" id="userNIK" class="form-input" placeholder="16 Digit NIK">
-                    <label class="form-label">No. WhatsApp</label>
-                    <input type="number" id="userWA" class="form-input" placeholder="Contoh: 08123456789">
+                    <label class="form-label">NIK (KTP)</label><input type="number" id="userNIK" class="form-input" placeholder="16 Digit NIK">
+                    <label class="form-label">No. WhatsApp</label><input type="number" id="userWA" class="form-input" placeholder="Contoh: 08123456789">
                     <label class="form-label">Nama Bank / E-Wallet</label>
                     <select id="userBankName" class="form-input">
                         <option value="" disabled selected>Pilih Bank / E-Wallet</option>
-                        <option value="Bank Mandiri">Bank Mandiri</option>
-                        <option value="Bank BCA">Bank BCA</option>
-                        <option value="Bank BNI">Bank BNI</option>
-                        <option value="Bank BRI">Bank BRI</option>
-                        <option value="e-Wallet Dana">e-Wallet Dana</option>
-                        <option value="e-Wallet ShoppeePay">e-Wallet ShoppeePay</option>
+                        <option value="Bank Mandiri">Bank Mandiri</option><option value="Bank BCA">Bank BCA</option>
+                        <option value="Bank BNI">Bank BNI</option><option value="Bank BRI">Bank BRI</option>
+                        <option value="e-Wallet Dana">e-Wallet Dana</option><option value="e-Wallet ShoppeePay">e-Wallet ShoppeePay</option>
                     </select>
-                    <label class="form-label">Nomor Rekening</label>
-                    <input type="number" id="userBankNum" class="form-input" placeholder="Nomor Rekening">
-                    <button class="btn-submit" onclick="saveProfile()" style="background:var(--text-main); color:white;">
-                        <i class="fas fa-save"></i> Simpan Data
-                    </button>
+                    <label class="form-label">Nomor Rekening</label><input type="number" id="userBankNum" class="form-input" placeholder="Nomor Rekening">
+                    <button class="btn-submit" onclick="saveProfile()" style="background:var(--text-main); color:white;"><i class="fas fa-save"></i> Simpan Data</button>
                 </div>
                 <div style="margin-top:30px; border-top:1px solid #eee; padding-top:20px;">
-                    <div onclick="logout()" style="color: var(--danger); font-weight:600; cursor:pointer; background:#FFEBEE; padding:15px; border-radius:12px;">
-                        <i class="fas fa-sign-out-alt"></i> KELUAR (LOGOUT)
-                    </div>
+                    <div onclick="logout()" style="color: var(--danger); font-weight:600; cursor:pointer; background:#FFEBEE; padding:15px; border-radius:12px;"><i class="fas fa-sign-out-alt"></i> KELUAR (LOGOUT)</div>
                 </div>
             </div>
         </div>
@@ -286,20 +186,15 @@
     <div class="modal-overlay" id="confirmModal">
         <div class="modal-content">
             <h2 style="color:var(--primary);"><i class="fas fa-check-circle"></i> Uang Masuk!</h2>
-            <p style="margin:15px 0; line-height:1.5; color:#555;">
-                Kurator telah mentransfer dana penarikan Anda.<br>Silakan cek rekening <b><span id="confirmBank"></span></b>.
-            </p>
+            <p style="margin:15px 0; line-height:1.5; color:#555;">Kurator telah mentransfer dana penarikan Anda.<br>Silakan cek rekening <b><span id="confirmBank"></span></b>.</p>
             <button class="btn-submit" onclick="confirmReceipt()">YA, UANG DITERIMA</button>
         </div>
     </div>
 
-    <div id="gclToast" class="gcl-toast">
-        <i class="fas fa-info-circle" style="color:var(--primary); font-size:1.2rem;"></i>
-        <div id="toastMsg" style="font-size:0.9rem; font-weight:600;">Notifikasi</div>
-    </div>
+    <div id="gclToast" class="gcl-toast"><i class="fas fa-info-circle" style="color:var(--primary); font-size:1.2rem;"></i><div id="toastMsg" style="font-size:0.9rem; font-weight:600;">Notifikasi</div></div>
 
     <script>
-        // CONFIG FIREBASE (WAJIB PAKAI .firebaseapp.com AGAR STABIL)
+        // CONFIG FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyArd38MI6bL4EI6Q4oW-VJA_SnM0Ky35Js",
             authDomain: "gardacreativelab.firebaseapp.com",
@@ -313,223 +208,149 @@
         const auth = firebase.auth();
         const provider = new firebase.auth.GoogleAuthProvider();
 
-        let currentUser = null;
-        let userData = {}; 
-        let currentPoints = 0;
-        let pendingWithdrawalId = null;
+        let currentUser = null; let userData = {}; let currentPoints = 0; let pendingWithdrawalId = null;
 
-        // AUTH LOGIC (SOLUSI KONKRIT IPHONE)
         auth.onAuthStateChanged((user) => {
             if (user) {
-                currentUser = user;
-                document.getElementById('loadingScreen').style.display = 'none';
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('appScreen').style.display = 'block';
-                
-                document.getElementById('userName').innerText = user.displayName;
-                document.getElementById('userPhoto').src = user.photoURL;
-
-                loadUserProfile();
-                loadSubmissions();
-                loadLeaderboard();
-                checkPendingConfirmations();
+                currentUser = user; document.getElementById('loadingScreen').style.display = 'none'; document.getElementById('loginScreen').style.display = 'none'; document.getElementById('appScreen').style.display = 'block';
+                document.getElementById('userName').innerText = user.displayName; document.getElementById('userPhoto').src = user.photoURL;
+                loadUserProfile(); loadSubmissions(); loadLeaderboard(); checkPendingConfirmations();
             } else {
-                // User belum login, matikan loader, tampilkan tombol login
-                document.getElementById('loadingScreen').style.display = 'none';
-                document.getElementById('loginScreen').style.display = 'flex';
-                document.getElementById('appScreen').style.display = 'none';
+                document.getElementById('loadingScreen').style.display = 'none'; document.getElementById('loginScreen').style.display = 'flex'; document.getElementById('appScreen').style.display = 'none';
             }
         });
 
         function googleLogin() { 
             document.getElementById('loadingScreen').style.display = 'flex';
-            
-            // 1. SET PERSISTENCE: MEMAKSA IPHONE MENYIMPAN LOGIN
-            auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
-            .then(() => {
-                // 2. LAKUKAN LOGIN POPUP
-                return auth.signInWithPopup(provider);
-            })
-            .then((result) => {
-                // Login Sukses
-                console.log("Login sukses!");
-            })
+            auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(() => { return auth.signInWithPopup(provider); })
             .catch((error) => {
                 document.getElementById('loadingScreen').style.display = 'none';
-                if(error.code === 'auth/popup-blocked') {
-                     alert("⚠️ Browser Anda memblokir Pop-up Login.\n\nSOLUSI: Silakan klik tombol Login sekali lagi. Jika muncul pertanyaan, pilih 'Allow' atau 'Izinkan'.");
-                } else if (error.code === 'auth/popup-closed-by-user') {
-                     // User menutup popup sendiri, biarkan saja
-                } else {
-                     alert("Gagal Masuk: " + error.message);
-                }
+                if(error.code === 'auth/popup-blocked') { alert("⚠️ Browser memblokir Pop-up.\nSilakan klik tombol Login sekali lagi, dan pilih 'Allow' atau 'Izinkan'."); } 
+                else if (error.code !== 'auth/popup-closed-by-user') { alert("Gagal: " + error.message); }
             }); 
         }
         
-        function logout() {
-            if(confirm("Yakin ingin keluar akun?")) {
-                document.getElementById('loadingScreen').style.display = 'flex';
-                auth.signOut().then(() => { window.location.reload(); });
-            }
-        }
+        function logout() { if(confirm("Keluar akun?")) { document.getElementById('loadingScreen').style.display = 'flex'; auth.signOut().then(() => { window.location.reload(); }); } }
 
-        // --- SISA LOGIC SAMA PERSIS SEPERTI SEBELUMNYA ---
         function loadLeaderboard() {
             db.collection("users").orderBy("balance", "desc").limit(7).onSnapshot(snap => {
-                const list = document.getElementById("leaderboardList");
-                list.innerHTML = "";
-                let rank = 1;
+                const list = document.getElementById("leaderboardList"); list.innerHTML = ""; let rank = 1;
                 snap.forEach(doc => {
-                    const u = doc.data();
-                    let rankClass = "";
-                    let icon = `#${rank}`;
-                    if(rank === 1) { rankClass = "rank-1"; icon = "👑"; }
-                    if(rank === 2) { rankClass = "rank-2"; icon = "🥈"; }
-                    if(rank === 3) { rankClass = "rank-3"; icon = "🥉"; }
-                    const avatar = u.photo || "https://via.placeholder.com/40";
-                    const name = u.name || "Anonim";
-                    const points = u.balance || 0;
-                    list.innerHTML += `
-                        <div class="leaderboard-card ${rankClass}">
-                            <div class="rank-num">${icon}</div>
-                            <img src="${avatar}" class="lb-avatar">
-                            <div class="lb-info">
-                                <div class="lb-name">${name}</div>
-                            </div>
-                            <div class="lb-points">${points} Poin</div>
-                        </div>`;
+                    const u = doc.data(); let rankClass = ""; let icon = `#${rank}`;
+                    if(rank === 1) { rankClass = "rank-1"; icon = "👑"; } if(rank === 2) { rankClass = "rank-2"; icon = "🥈"; } if(rank === 3) { rankClass = "rank-3"; icon = "🥉"; }
+                    list.innerHTML += `<div class="leaderboard-card ${rankClass}"><div class="rank-num">${icon}</div><img src="${u.photo || 'https://via.placeholder.com/40'}" class="lb-avatar"><div class="lb-info"><div class="lb-name">${u.name || 'Anonim'}</div></div><div class="lb-points">${u.balance || 0} Poin</div></div>`;
                     rank++;
                 });
             });
         }
+
         function loadUserProfile() {
             db.collection("users").doc(currentUser.uid).onSnapshot(doc => {
                 if(doc.exists) {
-                    userData = doc.data();
-                    currentPoints = userData.balance || 0;
-                    document.getElementById('displayPoints').innerText = currentPoints;
-                    document.getElementById('profModalName').innerText = userData.name;
-                    document.getElementById('profModalImg').src = userData.photo;
-                    document.getElementById('userNIK').value = userData.nik || "";
-                    document.getElementById('userWA').value = userData.whatsapp || "";
-                    document.getElementById('userBankName').value = userData.bankName || "";
-                    document.getElementById('userBankNum').value = userData.bankNumber || "";
-                    if(userData.nik && userData.bankNumber) {
-                        const b = document.getElementById('badgeVerif');
-                        b.innerText = "Kreator Terverifikasi";
-                        b.style.background = "#E3F2FD"; b.style.color = "#03754c";
-                    }
+                    userData = doc.data(); currentPoints = userData.balance || 0; document.getElementById('displayPoints').innerText = currentPoints;
+                    document.getElementById('profModalName').innerText = userData.name; document.getElementById('profModalImg').src = userData.photo;
+                    document.getElementById('userNIK').value = userData.nik || ""; document.getElementById('userWA').value = userData.whatsapp || "";
+                    document.getElementById('userBankName').value = userData.bankName || ""; document.getElementById('userBankNum').value = userData.bankNumber || "";
+                    if(userData.nik && userData.bankNumber) { const b = document.getElementById('badgeVerif'); b.innerText = "Kreator Terverifikasi"; b.style.background = "#E3F2FD"; b.style.color = "#03754c"; }
                 } else {
-                    db.collection("users").doc(currentUser.uid).set({
-                        name: currentUser.displayName,
-                        email: currentUser.email,
-                        photo: currentUser.photoURL,
-                        balance: 0,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
+                    db.collection("users").doc(currentUser.uid).set({ name: currentUser.displayName, email: currentUser.email, photo: currentUser.photoURL, balance: 0, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
                 }
             });
         }
+
         function saveProfile() {
-            const nik = document.getElementById('userNIK').value;
-            const wa = document.getElementById('userWA').value;
-            const bank = document.getElementById('userBankName').value;
-            const num = document.getElementById('userBankNum').value;
+            const nik = document.getElementById('userNIK').value; const wa = document.getElementById('userWA').value; const bank = document.getElementById('userBankName').value; const num = document.getElementById('userBankNum').value;
             if(!nik || !wa || !bank || !num) return showToast("Semua data wajib diisi!");
-            db.collection("users").doc(currentUser.uid).update({
-                nik: nik, whatsapp: wa, bankName: bank, bankNumber: num,
-                lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(() => {
-                showToast("Profil berhasil disimpan!");
-                toggleModal('profileModal', false);
-            });
+            db.collection("users").doc(currentUser.uid).update({ nik: nik, whatsapp: wa, bankName: bank, bankNumber: num, lastUpdated: firebase.firestore.FieldValue.serverTimestamp() })
+            .then(() => { showToast("Profil disimpan!"); toggleModal('profileModal', false); });
         }
+
         function openProfile() { toggleModal('profileModal', true); }
+
         function loadSubmissions() {
-            db.collection("submissions")
-              .where("userId", "==", currentUser.uid)
-              .orderBy("createdAt", "desc")
-              .onSnapshot(snap => {
-                  const list = document.getElementById('submissionsList');
-                  list.innerHTML = "";
+            db.collection("submissions").where("userId", "==", currentUser.uid).orderBy("createdAt", "desc").onSnapshot(snap => {
+                  const list = document.getElementById('submissionsList'); list.innerHTML = "";
                   if(snap.empty) { list.innerHTML = "<p style='text-align:center; color:#ccc; margin-top:20px;'>Belum ada karya.</p>"; return; }
                   snap.forEach(doc => {
                       const d = doc.data();
                       let icon = 'fa-link'; let bg = '#333';
-                      if(d.platform == 'facebook') { icon = 'fa-facebook-f'; bg = '#1877F2'; }
-                      if(d.platform == 'tiktok') { icon = 'fa-tiktok'; bg = '#000'; }
-                      if(d.platform == 'instagram') { icon = 'fa-instagram'; bg = 'linear-gradient(45deg, #f09433, #bc1888)'; }
-                      if(d.platform == 'youtube') { icon = 'fa-youtube'; bg = '#FF0000'; }
+                      if(d.platform == 'facebook') { icon = 'fa-facebook-f'; bg = '#1877F2'; } if(d.platform == 'tiktok') { icon = 'fa-tiktok'; bg = '#000'; }
+                      if(d.platform == 'instagram') { icon = 'fa-instagram'; bg = 'linear-gradient(45deg, #f09433, #bc1888)'; } if(d.platform == 'youtube') { icon = 'fa-youtube'; bg = '#FF0000'; }
+                      
                       let badge = `<span class="status-badge badge-pending">Menunggu</span>`;
-                      if(d.status == 'approved') badge = `<span class="status-badge badge-approved">+${d.pointsAwarded} Poin</span>`;
-                      if(d.status == 'rejected') badge = `<span class="status-badge badge-rejected">Ditolak</span>`;
+                      let reevalBtn = '';
+
+                      // FITUR BARU: TOMBOL AJUKAN ULANG
+                      if(d.status == 'approved') { 
+                          badge = `<span class="status-badge badge-approved">+${d.pointsAwarded} Poin</span>`; 
+                          reevalBtn = `<div style="margin-top:10px; padding-top:8px; border-top:1px dashed #eee; text-align:right;">
+                                          <span onclick="requestReeval('${doc.id}')" style="color:var(--primary); font-size:0.75rem; font-weight:600; cursor:pointer; padding:5px 10px; background:#E8F5E9; border-radius:20px;">
+                                              <i class="fas fa-sync-alt"></i> Ajukan Nilai Ulang
+                                          </span>
+                                       </div>`;
+                      } else if(d.status == 'rejected') { 
+                          badge = `<span class="status-badge badge-rejected">Ditolak</span>`; 
+                          reevalBtn = `<div style="margin-top:10px; padding-top:8px; border-top:1px dashed #eee; text-align:right;">
+                                          <span onclick="requestReeval('${doc.id}')" style="color:var(--danger); font-size:0.75rem; font-weight:600; cursor:pointer; padding:5px 10px; background:#FFEBEE; border-radius:20px;">
+                                              <i class="fas fa-sync-alt"></i> Ajukan Banding
+                                          </span>
+                                       </div>`;
+                      }
+
                       list.innerHTML += `
                         <div class="content-card">
                             <div class="platform-icon" style="background:${bg}"><i class="fab ${icon}"></i></div>
                             <div style="flex-grow:1; overflow:hidden;">
                                 ${badge}
-                                <div style="font-weight:600; font-size:0.9rem; margin-bottom:5px; color:var(--primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                                    ${d.link}
-                                </div>
+                                <div style="font-weight:600; font-size:0.9rem; margin-bottom:5px; color:var(--primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${d.link}</div>
                                 <div style="font-size:0.75rem; color:#888;">${d.createdAt ? new Date(d.createdAt.seconds * 1000).toLocaleDateString() : 'Baru saja'}</div>
+                                ${reevalBtn}
                             </div>
                         </div>`;
                   });
               });
         }
+
         function submitKarya() {
-            const link = document.getElementById('inputLink').value;
-            const platform = document.getElementById('inputPlatform').value;
+            const link = document.getElementById('inputLink').value; const platform = document.getElementById('inputPlatform').value;
             if(!link) return showToast("Link tidak boleh kosong!");
-            db.collection("submissions").add({
-                userId: currentUser.uid,
-                userName: userData.name || currentUser.displayName,
-                platform: platform,
-                link: link,
-                status: "pending",
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                pointsAwarded: 0
-            }).then(() => {
-                showToast("Karya terkirim!");
-                toggleModal('submitModal', false);
-                document.getElementById('inputLink').value = "";
-            });
+            db.collection("submissions").add({ userId: currentUser.uid, userName: userData.name || currentUser.displayName, platform: platform, link: link, status: "pending", createdAt: firebase.firestore.FieldValue.serverTimestamp(), pointsAwarded: 0 })
+            .then(() => { showToast("Karya terkirim!"); toggleModal('submitModal', false); document.getElementById('inputLink').value = ""; });
         }
-        function requestRedeemCheck() {
-            if(!userData.nik || !userData.bankNumber) { showToast("Mohon lengkapi profil dulu!"); openProfile(); return; }
-            document.getElementById('redeemTarget').innerText = `${userData.bankName} - ${userData.bankNumber}`;
-            toggleModal('redeemModal', true);
+
+        // FUNGSI BARU: KIRIM PENGAJUAN ULANG KE KURATOR
+        function requestReeval(docId) {
+            if(confirm("Apakah views/likes karya ini bertambah drastis? Ajukan penilaian ulang ke Kurator?")) {
+                db.collection("submissions").doc(docId).update({
+                    status: "pending",
+                    isReval: true,
+                    revalRequestedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }).then(() => {
+                    showToast("Pengajuan ulang berhasil dikirim!");
+                });
+            }
         }
+
+        function requestRedeemCheck() { if(!userData.nik || !userData.bankNumber) { showToast("Lengkapi profil dulu!"); openProfile(); return; } document.getElementById('redeemTarget').innerText = `${userData.bankName} - ${userData.bankNumber}`; toggleModal('redeemModal', true); }
         function processRedeem() {
-            const amount = parseInt(document.getElementById('redeemAmount').value);
-            if(amount < 150) return showToast("Minimal 150 Poin!");
-            if(amount > currentPoints) return showToast("Saldo poin tidak cukup!");
+            const amount = parseInt(document.getElementById('redeemAmount').value); if(amount < 150) return showToast("Minimal 150 Poin!"); if(amount > currentPoints) return showToast("Saldo tidak cukup!");
             db.collection("users").doc(currentUser.uid).update({ balance: firebase.firestore.FieldValue.increment(-amount) });
-            db.collection("withdrawals").add({
-                userId: currentUser.uid, userName: userData.name, userNik: userData.nik, userWa: userData.whatsapp, amount: amount,
-                bankDetails: `${userData.bankName} - ${userData.bankNumber}`, status: "pending", requestedAt: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(() => { showToast("Permintaan diajukan!"); toggleModal('redeemModal', false); });
+            db.collection("withdrawals").add({ userId: currentUser.uid, userName: userData.name, userNik: userData.nik, userWa: userData.whatsapp, amount: amount, bankDetails: `${userData.bankName} - ${userData.bankNumber}`, status: "pending", requestedAt: firebase.firestore.FieldValue.serverTimestamp() })
+            .then(() => { showToast("Permintaan diajukan!"); toggleModal('redeemModal', false); });
         }
         function checkPendingConfirmations() {
             db.collection("withdrawals").where("userId", "==", currentUser.uid).where("status", "==", "transferred").onSnapshot(snap => {
-                  if(!snap.empty) {
-                      const doc = snap.docs[0]; pendingWithdrawalId = doc.id;
-                      document.getElementById('confirmBank').innerText = doc.data().bankDetails;
-                      document.getElementById('profileNotif').style.display = 'block';
-                      toggleModal('confirmModal', true);
-                  } else { document.getElementById('profileNotif').style.display = 'none'; }
+                  if(!snap.empty) { const doc = snap.docs[0]; pendingWithdrawalId = doc.id; document.getElementById('confirmBank').innerText = doc.data().bankDetails; document.getElementById('profileNotif').style.display = 'block'; toggleModal('confirmModal', true); } 
+                  else { document.getElementById('profileNotif').style.display = 'none'; }
               });
         }
         function confirmReceipt() {
             if(!pendingWithdrawalId) return;
-            db.collection("withdrawals").doc(pendingWithdrawalId).update({ status: "completed", completedAt: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(() => { showToast("Transaksi Selesai. Terima kasih!"); toggleModal('confirmModal', false); });
+            db.collection("withdrawals").doc(pendingWithdrawalId).update({ status: "completed", completedAt: firebase.firestore.FieldValue.serverTimestamp() })
+            .then(() => { showToast("Selesai. Terima kasih!"); toggleModal('confirmModal', false); });
         }
         function toggleModal(id, show) { document.getElementById(id).style.display = show ? 'flex' : 'none'; }
-        function showToast(msg) {
-            const t = document.getElementById('gclToast'); document.getElementById('toastMsg').innerText = msg;
-            t.classList.add('active'); setTimeout(() => t.classList.remove('active'), 3000);
-        }
+        function showToast(msg) { const t = document.getElementById('gclToast'); document.getElementById('toastMsg').innerText = msg; t.classList.add('active'); setTimeout(() => t.classList.remove('active'), 3000); }
     </script>
 </body>
 </html>

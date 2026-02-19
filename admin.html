@@ -16,26 +16,15 @@
         :root { --primary: #03754c; --bg: #F5F7FA; --secondary: #FFC107; --danger: #FF5252; --text: #333; }
         body { font-family: 'Poppins', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: var(--text); }
         
-        /* LOGIN */
-        #loginOverlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--primary); z-index: 9999;
-            display: flex; flex-direction: column; align-items: center; justify-content: center; color: white;
-        }
-        .login-box {
-            background: white; padding: 30px; border-radius: 16px; width: 320px; text-align: center; color: #333; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
+        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
+        .login-box { background: white; padding: 30px; border-radius: 16px; width: 320px; text-align: center; color: #333; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
         .form-input { width: 100%; padding: 12px; margin-bottom: 15px; border: 2px solid #eee; border-radius: 8px; font-size: 1rem; outline: none; }
-        .form-input:focus { border-color: var(--primary); }
-        .btn { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.2s; }
-        .btn:hover { opacity: 0.9; }
+        .btn { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; }
         .btn-danger { background: var(--danger); }
         .btn-outline { background: white; color: var(--primary); border: 2px solid var(--primary); }
 
-        /* DASHBOARD */
         #dashboard { display: none; max-width: 1000px; margin: 0 auto; }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; background: white; padding: 20px; border-radius: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        
         .tabs { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
         .tab { padding: 10px 25px; background: white; border-radius: 30px; cursor: pointer; font-weight: 600; font-size: 0.9rem; color: #666; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
         .tab.active { background: var(--primary); color: white; }
@@ -44,27 +33,22 @@
         .card { background: white; padding: 20px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #ccc; }
         .card-wd { border-left-color: var(--secondary); }
         .card-pending { border-left-color: #2196F3; }
+        .card-reval { border-left-color: #FF9800; } /* Warna Oranye untuk Revisi */
         .card-approved { border-left-color: #4CAF50; }
         .card-rejected { border-left-color: var(--danger); }
-
         .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; background: #eee; }
         .badge-points { background: #E8F5E9; color: var(--primary); }
 
-        /* MODAL KALKULATOR */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; display: none; align-items: center; justify-content: center; }
         .modal-content { background: white; width: 90%; max-width: 500px; border-radius: 20px; padding: 30px; max-height: 90vh; overflow-y: auto; }
-        
         .calc-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
         .calc-grid input { text-align: center; font-weight: bold; }
-        
         .checkbox-group { background: #f9f9f9; padding: 15px; border-radius: 12px; margin-bottom: 20px; }
         .checkbox-item { display: flex; align-items: center; margin-bottom: 10px; font-size: 0.9rem; cursor: pointer; }
         .checkbox-item input { margin-right: 10px; transform: scale(1.2); }
-        
         .result-box { background: var(--primary); color: white; padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 20px; }
         .result-points { font-size: 2.5rem; font-weight: 800; color: var(--secondary); line-height: 1; margin: 10px 0; }
 
-        /* TOAST */
         .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: #333; color: white; padding: 12px 25px; border-radius: 30px; z-index: 9999; transition: 0.4s; font-weight: 600; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
         .toast.show { transform: translateX(-50%) translateY(0); }
     </style>
@@ -84,10 +68,7 @@
 
     <div id="dashboard">
         <div class="header">
-            <div>
-                <h2 style="color:var(--primary); margin:0;">Ruang Kurasi</h2>
-                <div style="font-size:0.8rem; color:#666;">Garda Creative Lab</div>
-            </div>
+            <div><h2 style="color:var(--primary); margin:0;">Ruang Kurasi</h2><div style="font-size:0.8rem; color:#666;">Garda Creative Lab</div></div>
             <button onclick="location.reload()" class="btn btn-outline" style="width:auto; padding:8px 15px;"><i class="fas fa-sign-out-alt"></i> Keluar</button>
         </div>
 
@@ -102,9 +83,7 @@
         </div>
 
         <div id="panel-history" class="hidden">
-            <div style="margin-bottom:15px; background:#fff; padding:15px; border-radius:12px; font-size:0.85rem; color:#666;">
-                <i class="fas fa-info-circle"></i> Ini adalah daftar karya yang sudah dinilai. Klik <b>"Edit Nilai"</b> jika ada karya yang bertambah viral dan ingin direvisi poinnya.
-            </div>
+            <div style="margin-bottom:15px; background:#fff; padding:15px; border-radius:12px; font-size:0.85rem; color:#666;"><i class="fas fa-info-circle"></i> Ini adalah daftar karya yang sudah dinilai. Klik <b>"Edit Nilai"</b> jika ada karya yang bertambah viral.</div>
             <div id="listHistory"><p style="text-align:center; color:#888;">Memuat data...</p></div>
         </div>
 
@@ -127,18 +106,9 @@
 
             <label style="font-size:0.8rem; font-weight:bold; color:#666;">Data Engagement Asli:</label>
             <div class="calc-grid">
-                <div>
-                    <small>Views</small>
-                    <input type="number" id="c_views" class="form-input" placeholder="0" oninput="liveCalc()">
-                </div>
-                <div>
-                    <small>Likes</small>
-                    <input type="number" id="c_likes" class="form-input" placeholder="0" oninput="liveCalc()">
-                </div>
-                <div>
-                    <small>Comments</small>
-                    <input type="number" id="c_comments" class="form-input" placeholder="0" oninput="liveCalc()">
-                </div>
+                <div><small>Views</small><input type="number" id="c_views" class="form-input" placeholder="0" oninput="liveCalc()"></div>
+                <div><small>Likes</small><input type="number" id="c_likes" class="form-input" placeholder="0" oninput="liveCalc()"></div>
+                <div><small>Comments</small><input type="number" id="c_comments" class="form-input" placeholder="0" oninput="liveCalc()"></div>
             </div>
 
             <label style="font-size:0.8rem; font-weight:bold; color:#666;">Kriteria Konten (Centang yang ada):</label>
@@ -154,9 +124,7 @@
             <div class="result-box">
                 <div style="font-size:0.8rem;">Estimasi Poin Akhir</div>
                 <div class="result-points" id="c_result">0</div>
-                <div id="c_warning" style="font-size:0.75rem; color:#FFCDD2; display:none;">
-                    <i class="fas fa-exclamation-triangle"></i> Pinalti: Kriteria kurang dari 2 (Poin dibagi 10)
-                </div>
+                <div id="c_warning" style="font-size:0.75rem; color:#FFCDD2; display:none;"><i class="fas fa-exclamation-triangle"></i> Pinalti: Kriteria kurang dari 2 (Poin dibagi 10)</div>
             </div>
 
             <div style="display:flex; gap:10px;">
@@ -169,231 +137,129 @@
     <div id="toast" class="toast">Berhasil!</div>
 
     <script>
-        // --- KONFIGURASI ---
-        const ADMIN_USERNAME = "admin";
-        const ADMIN_PASSWORD = "gcl2026";
+        const ADMIN_USERNAME = "admin"; const ADMIN_PASSWORD = "gcl2026";
+        const firebaseConfig = { apiKey: "AIzaSyArd38MI6bL4EI6Q4oW-VJA_SnM0Ky35Js", authDomain: "gardacreativelab.firebaseapp.com", projectId: "gardacreativelab", storageBucket: "gardacreativelab.firebasestorage.app", messagingSenderId: "983029298298", appId: "1:983029298298:web:5911967a358adb373df7c3" };
+        firebase.initializeApp(firebaseConfig); const db = firebase.firestore();
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyArd38MI6bL4EI6Q4oW-VJA_SnM0Ky35Js",
-            authDomain: "gardacreativelab.firebaseapp.com",
-            projectId: "gardacreativelab",
-            storageBucket: "gardacreativelab.firebasestorage.app",
-            messagingSenderId: "983029298298",
-            appId: "1:983029298298:web:5911967a358adb373df7c3"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+        let currentDocId = null; let currentUserId = null; let oldScore = 0;
 
-        // Variabel Global untuk Kalkulator
-        let currentDocId = null;
-        let currentUserId = null;
-        let oldScore = 0; // Untuk menghitung selisih jika penilaian ulang
-
-        // 1. LOGIN
         function checkLogin() {
             if(document.getElementById('adminUser').value === ADMIN_USERNAME && document.getElementById('adminPass').value === ADMIN_PASSWORD) {
-                document.getElementById('loginOverlay').style.display = 'none';
-                document.getElementById('dashboard').style.display = 'block';
-                initDashboard();
-            } else {
-                document.getElementById('loginMsg').innerText = "Username atau Password salah!";
-            }
+                document.getElementById('loginOverlay').style.display = 'none'; document.getElementById('dashboard').style.display = 'block';
+                loadPending(); loadHistory(); loadWD();
+            } else { document.getElementById('loginMsg').innerText = "Username atau Password salah!"; }
         }
 
-        function initDashboard() {
-            loadPending();
-            loadHistory();
-            loadWD();
-        }
-
-        // 2. LOAD PENDING SUBMISSIONS
+        // LOAD PENDING (DENGAN DETEKSI PENGAJUAN ULANG)
         function loadPending() {
             db.collection("submissions").where("status", "==", "pending").orderBy("createdAt", "desc").onSnapshot(snap => {
-                const div = document.getElementById("listPending");
-                div.innerHTML = "";
+                const div = document.getElementById("listPending"); div.innerHTML = "";
                 if(snap.empty) { div.innerHTML = "<p style='text-align:center;'>Hore! Tidak ada antrian validasi.</p>"; return; }
                 
                 snap.forEach(doc => {
                     const d = doc.data();
                     const dateStr = d.createdAt ? new Date(d.createdAt.seconds * 1000).toLocaleString() : '-';
+                    
+                    // CEK APAKAH INI KARYA BARU ATAU REVISI
+                    let typeBadge = `<span class="badge" style="background:#E3F2FD; color:#1976D2;">KARYA BARU</span>`;
+                    let borderStyle = "card-pending";
+                    let oldPtsText = "";
+
+                    if(d.isReval) {
+                        typeBadge = `<span class="badge" style="background:#FFF3E0; color:#FF9800;"><i class="fas fa-sync-alt"></i> PENGAJUAN ULANG</span>`;
+                        borderStyle = "card-reval"; 
+                        oldPtsText = `<div style="font-size:0.8rem; color:#FF9800; font-weight:bold; margin-top:5px;">Poin Sebelumnya: ${d.pointsAwarded || 0}</div>`;
+                    }
+
                     div.innerHTML += `
-                        <div class="card card-pending">
+                        <div class="card ${borderStyle}">
                             <div style="flex-grow:1;">
-                                <b>${d.userName}</b> <span class="badge" style="background:#E3F2FD; color:#1976D2;">${d.platform.toUpperCase()}</span><br>
-                                <div style="font-size:0.8rem; color:#666; margin:5px 0;">${dateStr}</div>
-                                <a href="${d.link}" target="_blank" style="font-size:0.9rem; color:blue; text-decoration:none;"><i class="fas fa-external-link-alt"></i> Buka Link Postingan</a>
+                                <b>${d.userName}</b> ${typeBadge} <span class="badge">${d.platform.toUpperCase()}</span><br>
+                                <div style="font-size:0.8rem; color:#666; margin:2px 0;">${dateStr}</div>
+                                ${oldPtsText}
+                                <div style="margin-top:5px;">
+                                    <a href="${d.link}" target="_blank" style="font-size:0.9rem; color:blue; text-decoration:none;"><i class="fas fa-external-link-alt"></i> Buka Link Postingan</a>
+                                </div>
                             </div>
                             <div>
-                                <button class="btn" style="width:auto; padding:8px 15px;" onclick="openCalc('${doc.id}', '${d.userId}', '${d.userName}', '${d.link}', 0)">Nilai Karya</button>
+                                <button class="btn" style="width:auto; padding:8px 15px;" onclick="openCalc('${doc.id}', '${d.userId}', '${d.userName}', '${d.link}', ${d.pointsAwarded || 0})">Nilai Karya</button>
                             </div>
                         </div>`;
                 });
             });
         }
 
-        // 3. LOAD HISTORY (RIWAYAT KARYA YANG SUDAH DINILAI)
         function loadHistory() {
             db.collection("submissions").where("status", "in", ["approved", "rejected"]).orderBy("createdAt", "desc").limit(50).onSnapshot(snap => {
-                const div = document.getElementById("listHistory");
-                div.innerHTML = "";
+                const div = document.getElementById("listHistory"); div.innerHTML = "";
                 if(snap.empty) { div.innerHTML = "<p style='text-align:center;'>Belum ada riwayat penilaian.</p>"; return; }
-                
                 snap.forEach(doc => {
                     const d = doc.data();
                     let badgeColor = d.status === 'approved' ? 'card-approved' : 'card-rejected';
                     let statusText = d.status === 'approved' ? `<span class="badge badge-points">+${d.pointsAwarded} Poin</span>` : `<span class="badge" style="background:#FFEBEE; color:red;">Ditolak</span>`;
-                    
-                    div.innerHTML += `
-                        <div class="card ${badgeColor}">
-                            <div style="flex-grow:1;">
-                                <b>${d.userName}</b> ${statusText}<br>
-                                <a href="${d.link}" target="_blank" style="font-size:0.8rem; color:#666; text-decoration:none;">${d.link.substring(0,30)}...</a>
-                            </div>
-                            <div>
-                                <button class="btn btn-outline" style="width:auto; padding:5px 10px; font-size:0.8rem;" onclick="openCalc('${doc.id}', '${d.userId}', '${d.userName}', '${d.link}', ${d.pointsAwarded || 0})"><i class="fas fa-edit"></i> Edit Nilai</button>
-                            </div>
-                        </div>`;
+                    div.innerHTML += `<div class="card ${badgeColor}"><div style="flex-grow:1;"><b>${d.userName}</b> ${statusText}<br><a href="${d.link}" target="_blank" style="font-size:0.8rem; color:#666; text-decoration:none;">${d.link.substring(0,30)}...</a></div><div><button class="btn btn-outline" style="width:auto; padding:5px 10px; font-size:0.8rem;" onclick="openCalc('${doc.id}', '${d.userId}', '${d.userName}', '${d.link}', ${d.pointsAwarded || 0})"><i class="fas fa-edit"></i> Edit Nilai</button></div></div>`;
                 });
             });
         }
 
-        // 4. LOAD WITHDRAWALS (SAMA SEPERTI SEBELUMNYA)
         function loadWD() {
             db.collection("withdrawals").where("status", "in", ["pending", "transferred"]).onSnapshot(snap => {
-                const div = document.getElementById("listWd");
-                div.innerHTML = "";
+                const div = document.getElementById("listWd"); div.innerHTML = "";
                 if(snap.empty) { div.innerHTML = "<p style='text-align:center;'>Tidak ada antrian pencairan.</p>"; return; }
                 snap.forEach(doc => {
-                    const d = doc.data();
-                    let cleanWA = d.userWa ? d.userWa.toString().replace(/\D/g,'') : '';
-                    if(cleanWA.startsWith('0')) cleanWA = '62' + cleanWA.substring(1);
+                    const d = doc.data(); let cleanWA = d.userWa ? d.userWa.toString().replace(/\D/g,'') : ''; if(cleanWA.startsWith('0')) cleanWA = '62' + cleanWA.substring(1);
                     const linkWA = `https://wa.me/${cleanWA}?text=${encodeURIComponent(`Halo, ${d.userName}, saya Kurator GCL. Penarikan Dana sebesar ${d.amount} Poin telah ditransfer, mohon cek dan klik tombol Terima di Aplikasi.`)}`;
-
-                    let action = d.status === "pending" ? 
-                        `<button class="btn" style="background:#4CAF50;" onclick="markTransfer('${doc.id}', '${linkWA}')"><i class="fab fa-whatsapp"></i> Sudah Transfer</button>` : 
-                        `<span style="color:green; font-size:0.8rem; font-weight:bold;">✅ Menunggu Kreator Terima</span>`;
-
-                    div.innerHTML += `
-                        <div class="card card-wd" style="display:block;">
-                            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                                <h3 style="color:var(--primary); margin:0;">${d.amount} Poin</h3>
-                                <small>${d.status.toUpperCase()}</small>
-                            </div>
-                            <p style="margin:5px 0;"><b>${d.userName}</b> (NIK: ${d.userNik || '-'})</p>
-                            <div style="background:#eee; padding:10px; border-radius:8px; font-size:0.9rem; margin-bottom:10px;">
-                                Bank: <b>${d.bankDetails}</b><br>WA: ${d.userWa}
-                            </div>
-                            ${action}
-                        </div>`;
+                    let action = d.status === "pending" ? `<button class="btn" style="background:#4CAF50;" onclick="markTransfer('${doc.id}', '${linkWA}')"><i class="fab fa-whatsapp"></i> Sudah Transfer</button>` : `<span style="color:green; font-size:0.8rem; font-weight:bold;">✅ Menunggu Kreator Terima</span>`;
+                    div.innerHTML += `<div class="card card-wd" style="display:block;"><div style="display:flex; justify-content:space-between; margin-bottom:10px;"><h3 style="color:var(--primary); margin:0;">${d.amount} Poin</h3><small>${d.status.toUpperCase()}</small></div><p style="margin:5px 0;"><b>${d.userName}</b> (NIK: ${d.userNik || '-'})</p><div style="background:#eee; padding:10px; border-radius:8px; font-size:0.9rem; margin-bottom:10px;">Bank: <b>${d.bankDetails}</b><br>WA: ${d.userWa}</div>${action}</div>`;
                 });
             });
         }
 
-        function markTransfer(docId, waLink) {
-            if(confirm("Pastikan uang sudah ditransfer. Lanjut?")) {
-                db.collection("withdrawals").doc(docId).update({ status: "transferred" }).then(() => { window.open(waLink, '_blank'); });
-            }
-        }
+        function markTransfer(docId, waLink) { if(confirm("Pastikan uang sudah ditransfer. Lanjut?")) { db.collection("withdrawals").doc(docId).update({ status: "transferred" }).then(() => { window.open(waLink, '_blank'); }); } }
 
-        // 5. LOGIKA KALKULATOR PINTAR
         function openCalc(docId, userId, userName, link, currentPts) {
-            currentDocId = docId;
-            currentUserId = userId;
-            oldScore = currentPts; // Simpan nilai lama (0 jika baru)
-
-            // Reset Form
-            document.getElementById('c_views').value = '';
-            document.getElementById('c_likes').value = '';
-            document.getElementById('c_comments').value = '';
+            currentDocId = docId; currentUserId = userId; oldScore = currentPts;
+            document.getElementById('c_views').value = ''; document.getElementById('c_likes').value = ''; document.getElementById('c_comments').value = '';
             document.querySelectorAll('.c_crit').forEach(cb => cb.checked = false);
-            
-            document.getElementById('calcKreatorName').innerText = userName;
-            document.getElementById('calcLink').href = link;
-            liveCalc(); // Reset hasil ke 0
-
-            document.getElementById('calcModal').style.display = 'flex';
+            document.getElementById('calcKreatorName').innerText = userName; document.getElementById('calcLink').href = link;
+            liveCalc(); document.getElementById('calcModal').style.display = 'flex';
         }
 
         function closeModal() { document.getElementById('calcModal').style.display = 'none'; }
 
-        // Hitung Otomatis saat Kurator ngetik angka
         function liveCalc() {
-            let v = parseInt(document.getElementById('c_views').value) || 0;
-            let l = parseInt(document.getElementById('c_likes').value) || 0;
-            let c = parseInt(document.getElementById('c_comments').value) || 0;
-
-            // Rumus Dasar: 1k view = 10, 1k like = 12, 1k comment = 15
+            let v = parseInt(document.getElementById('c_views').value) || 0; let l = parseInt(document.getElementById('c_likes').value) || 0; let c = parseInt(document.getElementById('c_comments').value) || 0;
             let baseScore = (v * 0.01) + (l * 0.012) + (c * 0.015);
-
-            let multiplier = 0;
-            let checkedCount = 0;
-            document.querySelectorAll('.c_crit:checked').forEach(cb => {
-                multiplier += parseInt(cb.value);
-                checkedCount++;
-            });
-
-            if(multiplier === 0) multiplier = 1; // Jika tidak ada kriteria, pakai base score (sebelum dipinalti)
-            
+            let multiplier = 0; let checkedCount = 0;
+            document.querySelectorAll('.c_crit:checked').forEach(cb => { multiplier += parseInt(cb.value); checkedCount++; });
+            if(multiplier === 0) multiplier = 1; 
             let finalScore = baseScore * multiplier;
-
-            // Pinalti jika kriteria < 2
             const warn = document.getElementById('c_warning');
-            if(checkedCount < 2) {
-                finalScore = finalScore / 10;
-                warn.style.display = 'block';
-            } else {
-                warn.style.display = 'none';
-            }
-
+            if(checkedCount < 2) { finalScore = finalScore / 10; warn.style.display = 'block'; } else { warn.style.display = 'none'; }
             document.getElementById('c_result').innerText = Math.round(finalScore);
         }
 
-        // SIMPAN NILAI KE DATABASE
         function submitGrade(newStatus) {
             let finalPoints = parseInt(document.getElementById('c_result').innerText) || 0;
             if (newStatus === 'rejected') finalPoints = 0;
 
-            // Hitung Selisih (Delta) untuk menyesuaikan saldo kreator
-            // Jika baru: delta = finalPoints - 0.
-            // Jika edit (sebelumnya 100, sekarang 150): delta = 50.
-            // Jika ditolak (sebelumnya 100, sekarang 0): delta = -100.
+            // MENGHITUNG SELISIH (DELTA)
             let delta = finalPoints - oldScore;
 
-            // 1. Update Dokumen Karya
             db.collection("submissions").doc(currentDocId).update({
                 status: newStatus,
                 pointsAwarded: finalPoints,
+                isReval: false, // MATIKAN FLAG REVISI AGAR NORMAL KEMBALI
                 evaluatedAt: firebase.firestore.FieldValue.serverTimestamp()
             }).then(() => {
-                // 2. Update Saldo Kreator (Hanya jika ada selisih)
-                if(delta !== 0) {
-                    return db.collection("users").doc(currentUserId).update({
-                        balance: firebase.firestore.FieldValue.increment(delta)
-                    });
-                }
+                if(delta !== 0) { return db.collection("users").doc(currentUserId).update({ balance: firebase.firestore.FieldValue.increment(delta) }); }
             }).then(() => {
-                closeModal();
-                showToast(`Karya berhasil di-${newStatus}! Saldo disesuaikan.`);
+                closeModal(); showToast(`Selesai! Saldo disesuaikan (${delta > 0 ? '+'+delta : delta} Poin).`);
             }).catch(e => alert("Error: " + e.message));
         }
 
-        // UTILS
-        function switchTab(tab) {
-            document.getElementById('panel-pending').classList.add('hidden');
-            document.getElementById('panel-history').classList.add('hidden');
-            document.getElementById('panel-wd').classList.add('hidden');
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            
-            document.getElementById('panel-'+tab).classList.remove('hidden');
-            event.target.classList.add('active');
-        }
-
-        function showToast(msg) {
-            const t = document.getElementById('toast');
-            t.innerText = msg;
-            t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 3000);
-        }
+        function switchTab(tab) { document.getElementById('panel-pending').classList.add('hidden'); document.getElementById('panel-history').classList.add('hidden'); document.getElementById('panel-wd').classList.add('hidden'); document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); document.getElementById('panel-'+tab).classList.remove('hidden'); event.target.classList.add('active'); }
+        function showToast(msg) { const t = document.getElementById('toast'); t.innerText = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
     </script>
 </body>
 </html>
