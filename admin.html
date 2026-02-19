@@ -24,7 +24,16 @@
         .btn-outline { background: white; color: var(--primary); border: 2px solid var(--primary); }
 
         #dashboard { display: none; max-width: 1000px; margin: 0 auto; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; background: white; padding: 20px; border-radius: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: white; padding: 20px; border-radius: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        
+        /* STATS CARDS */
+        .stats-container { display: flex; gap: 15px; margin-bottom: 20px; }
+        .stat-box { flex: 1; background: white; padding: 20px; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); text-align: center; border-bottom: 4px solid var(--primary); }
+        .stat-box:nth-child(2) { border-bottom-color: var(--secondary); }
+        .stat-num { font-size: 2.2rem; font-weight: 700; color: var(--primary); line-height: 1; margin-bottom: 5px; }
+        .stat-box:nth-child(2) .stat-num { color: #F57C00; }
+        .stat-label { font-size: 0.85rem; color: #666; font-weight: 600; text-transform: uppercase; }
+
         .tabs { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
         .tab { padding: 10px 25px; background: white; border-radius: 30px; cursor: pointer; font-weight: 600; font-size: 0.9rem; color: #666; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
         .tab.active { background: var(--primary); color: white; }
@@ -33,7 +42,7 @@
         .card { background: white; padding: 20px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #ccc; }
         .card-wd { border-left-color: var(--secondary); }
         .card-pending { border-left-color: #2196F3; }
-        .card-reval { border-left-color: #FF9800; } /* Warna Oranye untuk Revisi */
+        .card-reval { border-left-color: #FF9800; } 
         .card-approved { border-left-color: #4CAF50; }
         .card-rejected { border-left-color: var(--danger); }
         .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; background: #eee; }
@@ -69,7 +78,18 @@
     <div id="dashboard">
         <div class="header">
             <div><h2 style="color:var(--primary); margin:0;">Ruang Kurasi</h2><div style="font-size:0.8rem; color:#666;">Garda Creative Lab</div></div>
-            <button onclick="location.reload()" class="btn btn-outline" style="width:auto; padding:8px 15px;"><i class="fas fa-sign-out-alt"></i> Keluar</button>
+            <button onclick="logoutAdmin()" class="btn btn-outline" style="width:auto; padding:8px 15px;"><i class="fas fa-sign-out-alt"></i> Keluar</button>
+        </div>
+
+        <div class="stats-container">
+            <div class="stat-box">
+                <div class="stat-num" id="statKreator">0</div>
+                <div class="stat-label"><i class="fas fa-users"></i> Total Kreator</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-num" id="statKarya">0</div>
+                <div class="stat-label"><i class="fas fa-check-circle"></i> Karya Diterima</div>
+            </div>
         </div>
 
         <div class="tabs">
@@ -143,14 +163,49 @@
 
         let currentDocId = null; let currentUserId = null; let oldScore = 0;
 
+        // FITUR BARU: CEK LOGIN SAAT HALAMAN DI-REFRESH
+        window.onload = function() {
+            if (sessionStorage.getItem('gclAdminLoggedIn') === 'true') {
+                document.getElementById('loginOverlay').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+                initDashboard();
+            }
+        };
+
         function checkLogin() {
             if(document.getElementById('adminUser').value === ADMIN_USERNAME && document.getElementById('adminPass').value === ADMIN_PASSWORD) {
-                document.getElementById('loginOverlay').style.display = 'none'; document.getElementById('dashboard').style.display = 'block';
-                loadPending(); loadHistory(); loadWD();
+                sessionStorage.setItem('gclAdminLoggedIn', 'true'); // Simpan sesi login
+                document.getElementById('loginOverlay').style.display = 'none'; 
+                document.getElementById('dashboard').style.display = 'block';
+                initDashboard();
             } else { document.getElementById('loginMsg').innerText = "Username atau Password salah!"; }
         }
 
-        // LOAD PENDING (DENGAN DETEKSI PENGAJUAN ULANG)
+        // FITUR BARU: LOGOUT ADMIN
+        function logoutAdmin() {
+            sessionStorage.removeItem('gclAdminLoggedIn');
+            window.location.reload();
+        }
+
+        function initDashboard() {
+            loadStats(); // Load Statistik Utama
+            loadPending(); 
+            loadHistory(); 
+            loadWD();
+        }
+
+        // FITUR BARU: LOAD STATISTIK
+        function loadStats() {
+            // Hitung Total Kreator
+            db.collection("users").onSnapshot(snap => {
+                document.getElementById('statKreator').innerText = snap.size;
+            });
+            // Hitung Total Karya yang Diterima
+            db.collection("submissions").where("status", "==", "approved").onSnapshot(snap => {
+                document.getElementById('statKarya').innerText = snap.size;
+            });
+        }
+
         function loadPending() {
             db.collection("submissions").where("status", "==", "pending").orderBy("createdAt", "desc").onSnapshot(snap => {
                 const div = document.getElementById("listPending"); div.innerHTML = "";
@@ -160,7 +215,6 @@
                     const d = doc.data();
                     const dateStr = d.createdAt ? new Date(d.createdAt.seconds * 1000).toLocaleString() : '-';
                     
-                    // CEK APAKAH INI KARYA BARU ATAU REVISI
                     let typeBadge = `<span class="badge" style="background:#E3F2FD; color:#1976D2;">KARYA BARU</span>`;
                     let borderStyle = "card-pending";
                     let oldPtsText = "";
@@ -243,13 +297,12 @@
             let finalPoints = parseInt(document.getElementById('c_result').innerText) || 0;
             if (newStatus === 'rejected') finalPoints = 0;
 
-            // MENGHITUNG SELISIH (DELTA)
             let delta = finalPoints - oldScore;
 
             db.collection("submissions").doc(currentDocId).update({
                 status: newStatus,
                 pointsAwarded: finalPoints,
-                isReval: false, // MATIKAN FLAG REVISI AGAR NORMAL KEMBALI
+                isReval: false, 
                 evaluatedAt: firebase.firestore.FieldValue.serverTimestamp()
             }).then(() => {
                 if(delta !== 0) { return db.collection("users").doc(currentUserId).update({ balance: firebase.firestore.FieldValue.increment(delta) }); }
