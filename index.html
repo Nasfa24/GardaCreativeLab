@@ -17,21 +17,30 @@
         :root { --primary: #03754c; --primary-dark: #025436; --secondary: #FFC107; --accent: #00E676; --danger: #FF5252; --bg-body: #F5F7FA; --text-main: #1A233A; --radius: 16px; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body { background-color: var(--bg-body); color: var(--text-main); padding-bottom: 100px; -webkit-tap-highlight-color: transparent; }
-        #loadingScreen, #loginScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        #loadingScreen { background: var(--bg-body); }
-        #loginScreen { background: var(--primary); display: none; color: white; padding: 30px; text-align: center; }
+        
+        #loadingScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(255,255,255,0.95); }
         .loader { width: 40px; height: 40px; border: 4px solid #ddd; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .login-btn { background: white; color: var(--text-main); padding: 12px 25px; border-radius: 30px; font-weight: 700; margin-top: 20px; display: flex; align-items: center; gap: 10px; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+
+        /* AUTH SCREEN (LOGIN & REGISTER) */
+        #loginScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary); z-index: 9999; display: none; flex-direction: column; align-items: center; justify-content: center; color: white; }
+        .auth-box { background: white; padding: 30px 20px; border-radius: 20px; width: 90%; max-width: 350px; text-align: center; color: #333; box-shadow: 0 10px 30px rgba(0,0,0,0.2); max-height: 85vh; overflow-y: auto; }
+        .auth-input { width: 100%; padding: 12px; margin-bottom: 12px; border: 2px solid #eee; border-radius: 12px; font-size: 0.95rem; outline: none; }
+        .auth-input:focus { border-color: var(--primary); }
+        .auth-btn { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; margin-top: 10px; }
+        .auth-link { font-size: 0.85rem; margin-top: 20px; color: var(--primary); font-weight: 600; cursor: pointer; }
+
         #appScreen { display: none; }
         .header { background-color: var(--primary); padding: 30px 20px 90px 20px; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; color: white; }
         .header-top { display: flex; justify-content: space-between; align-items: center; }
         .user-profile { display: flex; align-items: center; gap: 10px; cursor: pointer; }
-        .user-avatar { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--secondary); object-fit: cover; }
+        .user-avatar { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--secondary); object-fit: cover; background: white; }
+        
         .poin-card { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); margin: -70px 20px 20px 20px; padding: 25px; border-radius: var(--radius); box-shadow: 0 10px 25px rgba(3, 117, 76, 0.25); color: white; display: flex; justify-content: space-between; align-items: center; position: relative; overflow: hidden; }
         .poin-card::after { content: ''; position: absolute; top: -30px; right: -30px; width: 100px; height: 100px; background: var(--accent); opacity: 0.15; border-radius: 50%; }
         .poin-value { font-size: 2.2rem; font-weight: 700; color: var(--secondary); line-height: 1; }
         .btn-redeem { background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 30px; color: white; text-decoration: none; font-size: 0.8rem; font-weight: 600; cursor: pointer; border: 1px solid rgba(255,255,255,0.3); }
+        
         .leaderboard-area { padding: 0 20px; margin-bottom: 25px; }
         .leaderboard-card { background: white; border-radius: 12px; padding: 10px 15px; margin-bottom: 10px; display: flex; align-items: center; gap: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid #f0f0f0; }
         .rank-1 { background: linear-gradient(45deg, #FFF9C4, #FFFFFF); border: 1px solid #FFD54F; transform: scale(1.02); }
@@ -39,44 +48,95 @@
         .rank-3 { background: linear-gradient(45deg, #FFE0B2, #FFFFFF); border: 1px solid #FFCC80; }
         .rank-num { font-size: 1.2rem; font-weight: 700; width: 30px; text-align: center; color: #888; }
         .rank-1 .rank-num { color: #FFC107; font-size: 1.5rem; } .rank-2 .rank-num { color: #9E9E9E; } .rank-3 .rank-num { color: #D84315; }
-        .lb-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+        .lb-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background:#eee; }
         .lb-info { flex-grow: 1; }
         .lb-name { font-weight: 600; font-size: 0.9rem; color: var(--text-main); }
         .lb-points { font-weight: 700; color: var(--primary); font-size: 0.9rem; }
+        
         .content-area { padding: 0 20px; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 15px; }
+        .tab-btn { flex: 1; text-align: center; padding: 8px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; cursor: pointer; background: #eee; color: #666; }
+        .tab-btn.active { background: var(--primary); color: white; }
+
         .content-card { background: white; border-radius: var(--radius); padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; gap: 15px; position: relative; }
         .platform-icon { width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; color: white; }
         .icon-tiktok { background: #000; } .icon-instagram { background: linear-gradient(45deg, #f09433, #bc1888); } .icon-facebook { background: #1877F2; } .icon-youtube { background: #FF0000; }
         .status-badge { font-size: 0.7rem; padding: 4px 8px; border-radius: 6px; font-weight: 600; position: absolute; top: 15px; right: 15px; }
         .badge-pending { background: #FFF3E0; color: #FF9800; } .badge-approved { background: #E8F5E9; color: var(--primary); } .badge-rejected { background: #FFEBEE; color: var(--danger); }
+        
         .fab { position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; background: var(--accent); color: var(--primary-dark); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; box-shadow: 0 4px 20px rgba(0, 230, 118, 0.4); cursor: pointer; z-index: 90; }
+        
+        /* MODALS & CUSTOM ALERTS */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 200; display: none; align-items: flex-end; }
-        .modal-content { background: white; width: 100%; border-top-left-radius: 25px; border-top-right-radius: 25px; padding: 30px 25px; animation: slideUp 0.3s ease-out; }
+        .modal-content { background: white; width: 100%; border-top-left-radius: 25px; border-top-right-radius: 25px; padding: 30px 25px; animation: slideUp 0.3s ease-out; max-height: 90vh; overflow-y:auto; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         .form-label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 5px; margin-top: 15px; }
         .form-input { width: 100%; padding: 12px; border: 2px solid #EEE; border-radius: 12px; font-size: 1rem; outline: none; background: #fff; }
         .btn-submit { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; margin-top: 20px; }
+        
         .profile-modal-content { background: #F5F7FA; width: 100%; border-radius: 25px 25px 0 0; padding: 0; overflow-y: auto; max-height: 90vh; position: relative; animation: slideUp 0.3s ease-out; }
         .profile-cover { height: 120px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); position: relative; }
         .profile-avatar-large { width: 100px; height: 100px; border-radius: 50%; border: 4px solid white; position: absolute; bottom: -50px; left: 50%; transform: translateX(-50%); background: white; object-fit: cover; }
         .profile-info { margin-top: 60px; padding: 20px; text-align: center; }
         .profile-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; margin-bottom: 20px; }
+        
+        /* CUSTOM CONFIRM/ALERT BOX */
+        .gcl-dialog { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 99999; display: none; align-items: center; justify-content: center; }
+        .dialog-box { background: white; width: 85%; max-width: 350px; border-radius: 20px; padding: 25px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: popIn 0.3s ease-out; }
+        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .dialog-btn-row { display: flex; gap: 10px; margin-top: 20px; }
+        .d-btn { flex: 1; padding: 12px; border-radius: 10px; font-weight: 700; cursor: pointer; border: none; }
+        .d-btn-cancel { background: #eee; color: #555; }
+        .d-btn-ok { background: var(--primary); color: white; }
+
         .gcl-toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: rgba(255,255,255,0.95); padding: 12px 20px; border-radius: 50px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 12px; z-index: 9999; transition: all 0.4s; }
         .gcl-toast.active { transform: translateX(-50%) translateY(0); }
         .notif-dot { width: 10px; height: 10px; background: red; border-radius: 50%; border: 2px solid var(--primary); position: absolute; top: 0; right: 0; display: none; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
-    <div id="loadingScreen"><div class="loader"></div><p style="font-size:0.9rem; color:#666;">Memuat GCL...</p></div>
+    <div id="loadingScreen"><div class="loader"></div><p style="font-size:0.9rem; color:var(--primary); font-weight:bold;">Memuat GCL...</p></div>
 
     <div id="loginScreen">
         <h1 style="margin-bottom:5px;">Garda Creative Lab</h1>
         <p style="opacity:0.8; font-size:0.9rem; margin-bottom:30px;">Platform Kreator Masa Depan</p>
-        <div class="login-btn" onclick="googleLogin()">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20"> Masuk dengan Google
+        
+        <div class="auth-box" id="formLogin">
+            <h3 style="margin-bottom:20px; color:var(--primary);">Masuk Akun</h3>
+            <input type="email" id="loginEmail" class="auth-input" placeholder="Alamat Email">
+            <input type="password" id="loginPass" class="auth-input" placeholder="Password">
+            <button class="auth-btn" onclick="doLogin()">MASUK</button>
+            <div class="auth-link" onclick="toggleAuth('register')">Belum punya akun? Daftar di sini</div>
         </div>
-        <p style="font-size:0.75rem; margin-top:20px; opacity:0.7;">Jika muncul peringatan, pilih <b>"Allow" / "Izinkan"</b>.</p>
+
+        <div class="auth-box" id="formRegister" style="display:none; text-align:left;">
+            <h3 style="margin-bottom:20px; color:var(--primary); text-align:center;">Daftar Kreator</h3>
+            
+            <label style="font-size:0.8rem; font-weight:bold; color:#555; margin-left:5px;">Akun Login</label>
+            <input type="text" id="regName" class="auth-input" placeholder="Nama Lengkap">
+            <input type="email" id="regEmail" class="auth-input" placeholder="Alamat Email Aktif">
+            <input type="password" id="regPass" class="auth-input" placeholder="Buat Password (Min 6 Karakter)">
+            
+            <label style="font-size:0.8rem; font-weight:bold; color:#555; margin-left:5px; margin-top:10px; display:block;">Data Pencairan (Wajib)</label>
+            <input type="number" id="regNIK" class="auth-input" placeholder="16 Digit NIK KTP">
+            <input type="number" id="regWA" class="auth-input" placeholder="No. WhatsApp (Contoh: 0812...)">
+            
+            <select id="regBankName" class="auth-input" style="color:#555;">
+                <option value="" disabled selected>Pilih Bank / E-Wallet</option>
+                <option value="Bank Mandiri">Bank Mandiri</option>
+                <option value="Bank BCA">Bank BCA</option>
+                <option value="Bank BNI">Bank BNI</option>
+                <option value="Bank BRI">Bank BRI</option>
+                <option value="e-Wallet Dana">e-Wallet Dana</option>
+                <option value="e-Wallet ShoppeePay">e-Wallet ShoppeePay</option>
+            </select>
+            <input type="number" id="regBankNum" class="auth-input" placeholder="Nomor Rekening">
+
+            <button class="auth-btn" onclick="doRegister()">DAFTAR SEKARANG</button>
+            <div class="auth-link" style="text-align:center;" onclick="toggleAuth('login')">Batal / Kembali ke Login</div>
+        </div>
     </div>
 
     <div id="appScreen">
@@ -93,10 +153,7 @@
 
         <div class="poin-card">
             <div><div style="font-size:0.8rem; opacity:0.9;">Saldo Poin</div><div class="poin-value" id="displayPoints">0</div></div>
-            <div style="display:flex; gap:10px;">
-                <div class="btn-redeem" style="background:transparent; border:1px solid rgba(255,255,255,0.5);" onclick="openWdHistory()">Riwayat</div>
-                <div class="btn-redeem" onclick="requestRedeemCheck()">Tukar Uang</div>
-            </div>
+            <div class="btn-redeem" onclick="requestRedeemCheck()">Tukar Uang</div>
         </div>
 
         <div class="leaderboard-area">
@@ -105,11 +162,12 @@
         </div>
 
         <div class="content-area">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <h3 style="font-size:1rem; font-weight:700;">Riwayat Karya</h3>
-                <small onclick="loadSubmissions()" style="color:var(--primary); cursor:pointer;"><i class="fas fa-sync-alt"></i> Refresh</small>
+            <div class="tabs">
+                <div class="tab-btn active" id="tabKarya" onclick="switchView('karya')">Riwayat Karya</div>
+                <div class="tab-btn" id="tabWd" onclick="switchView('wd')">Riwayat Penarikan</div>
             </div>
             <div id="submissionsList"><p style="text-align:center; color:#ccc; margin-top:20px;">Memuat data...</p></div>
+            <div id="wdHistoryList" class="hidden"><p style="text-align:center; color:#ccc; margin-top:20px;">Belum ada penarikan.</p></div>
         </div>
         <div class="fab" onclick="toggleModal('submitModal', true)"><i class="fas fa-plus"></i></div>
     </div>
@@ -125,18 +183,6 @@
             <input type="text" id="inputLink" class="form-input" placeholder="Paste Link di sini...">
             <button class="btn-submit" onclick="submitKarya()">Kirim Karya</button>
             <div style="text-align:center; margin-top:15px; color:#888;" onclick="toggleModal('submitModal', false)">Batal</div>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="wdHistoryModal">
-        <div class="modal-content" style="max-height:80vh; overflow-y:auto; align-self:center; border-radius:25px;">
-            <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
-                <h3 style="margin:0; color:var(--primary);">Riwayat Penarikan</h3>
-                <i class="fas fa-times" style="cursor:pointer; font-size:1.2rem;" onclick="toggleModal('wdHistoryModal', false)"></i>
-            </div>
-            <div id="wdHistoryList">
-                <p style="text-align:center; color:#ccc; font-size:0.9rem;">Memuat data...</p>
-            </div>
         </div>
     </div>
 
@@ -159,10 +205,10 @@
                 <div style="position: absolute; top: 15px; right: 20px; color: white; cursor: pointer;" onclick="toggleModal('profileModal', false)"><i class="fas fa-times" style="font-size: 1.5rem;"></i></div>
             </div>
             <div class="profile-info">
-                <div class="profile-name" id="profModalName">...</div>
-                <div class="profile-badge" id="badgeVerif" style="background:#eee; color:#666;">Belum Terverifikasi</div>
+                <div class="profile-name" id="profModalName" style="font-weight:bold; font-size:1.2rem;">...</div>
+                <div class="profile-badge" id="badgeVerif" style="background:#E3F2FD; color:#03754c;">Kreator Terverifikasi</div>
                 <div style="text-align:left; margin-top:10px;">
-                    <h4 style="color:var(--primary); border-bottom:2px solid #eee; padding-bottom:5px; margin-bottom:15px;">Data Kreator (Wajib)</h4>
+                    <h4 style="color:var(--primary); border-bottom:2px solid #eee; padding-bottom:5px; margin-bottom:15px;">Data Kreator (Bisa Diedit)</h4>
                     <label class="form-label">NIK (KTP)</label><input type="number" id="userNIK" class="form-input" placeholder="16 Digit NIK">
                     <label class="form-label">No. WhatsApp</label><input type="number" id="userWA" class="form-input" placeholder="Contoh: 08123456789">
                     <label class="form-label">Nama Bank / E-Wallet</label>
@@ -173,10 +219,10 @@
                         <option value="e-Wallet Dana">e-Wallet Dana</option><option value="e-Wallet ShoppeePay">e-Wallet ShoppeePay</option>
                     </select>
                     <label class="form-label">Nomor Rekening</label><input type="number" id="userBankNum" class="form-input" placeholder="Nomor Rekening">
-                    <button class="btn-submit" onclick="saveProfile()" style="background:var(--text-main); color:white;"><i class="fas fa-save"></i> Simpan Data</button>
+                    <button class="btn-submit" onclick="saveProfile()" style="background:var(--text-main); color:white;"><i class="fas fa-save"></i> Simpan Perubahan</button>
                 </div>
                 <div style="margin-top:30px; border-top:1px solid #eee; padding-top:20px;">
-                    <div onclick="logout()" style="color: var(--danger); font-weight:600; cursor:pointer; background:#FFEBEE; padding:15px; border-radius:12px;"><i class="fas fa-sign-out-alt"></i> KELUAR (LOGOUT)</div>
+                    <div onclick="requestLogout()" style="color: var(--danger); font-weight:600; cursor:pointer; background:#FFEBEE; padding:15px; border-radius:12px;"><i class="fas fa-sign-out-alt"></i> KELUAR (LOGOUT)</div>
                 </div>
             </div>
         </div>
@@ -187,6 +233,17 @@
             <h2 style="color:var(--primary);"><i class="fas fa-check-circle"></i> Uang Masuk!</h2>
             <p style="margin:15px 0; line-height:1.5; color:#555;">Kurator telah mentransfer dana penarikan Anda.<br>Silakan cek rekening <b><span id="confirmBank"></span></b>.</p>
             <button class="btn-submit" onclick="confirmReceipt()">YA, UANG DITERIMA</button>
+        </div>
+    </div>
+
+    <div class="gcl-dialog" id="gclDialog">
+        <div class="dialog-box">
+            <h3 id="dTitle" style="margin-bottom:10px; color:var(--primary);">Konfirmasi</h3>
+            <p id="dMsg" style="font-size:0.9rem; color:#555; margin-bottom:20px;">Pesan disini</p>
+            <div class="dialog-btn-row">
+                <button class="d-btn d-btn-cancel" id="dBtnCancel" onclick="closeDialog()">Batal</button>
+                <button class="d-btn d-btn-ok" id="dBtnOk">YA</button>
+            </div>
         </div>
     </div>
 
@@ -204,54 +261,112 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
         const auth = firebase.auth();
-        const provider = new firebase.auth.GoogleAuthProvider();
 
         let currentUser = null; let userData = {}; let currentPoints = 0; let pendingWithdrawalId = null;
+        let defaultAvatar = "https://ui-avatars.com/api/?background=03754c&color=fff&name=";
 
+        // AUTH STATE (MEMASTIKAN SESSION TIDAK TERHAPUS SAAT REFRESH)
         auth.onAuthStateChanged((user) => {
             if (user) {
-                currentUser = user; document.getElementById('loadingScreen').style.display = 'none'; document.getElementById('loginScreen').style.display = 'none'; document.getElementById('appScreen').style.display = 'block';
-                document.getElementById('userName').innerText = user.displayName; document.getElementById('userPhoto').src = user.photoURL;
-                loadUserProfile(); loadSubmissions(); loadLeaderboard(); checkPendingConfirmations();
+                currentUser = user; 
+                document.getElementById('loadingScreen').style.display = 'none'; 
+                document.getElementById('loginScreen').style.display = 'none'; 
+                document.getElementById('appScreen').style.display = 'block';
+                
+                let displayName = user.displayName || "Kreator";
+                document.getElementById('userName').innerText = displayName; 
+                document.getElementById('userPhoto').src = user.photoURL || (defaultAvatar + displayName);
+                
+                loadUserProfile(); loadSubmissions(); loadWDHistory(); loadLeaderboard(); checkPendingConfirmations();
             } else {
-                document.getElementById('loadingScreen').style.display = 'none'; document.getElementById('loginScreen').style.display = 'flex'; document.getElementById('appScreen').style.display = 'none';
+                document.getElementById('loadingScreen').style.display = 'none'; 
+                document.getElementById('loginScreen').style.display = 'flex'; 
+                document.getElementById('appScreen').style.display = 'none';
             }
         });
 
-        function googleLogin() { 
-            document.getElementById('loadingScreen').style.display = 'flex';
-            auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(() => { return auth.signInWithPopup(provider); })
-            .catch((error) => {
-                document.getElementById('loadingScreen').style.display = 'none';
-                if(error.code === 'auth/popup-blocked') { alert("⚠️ Browser memblokir Pop-up.\nSilakan klik tombol Login sekali lagi, dan pilih 'Allow' atau 'Izinkan'."); } 
-                else if (error.code !== 'auth/popup-closed-by-user') { alert("Gagal: " + error.message); }
-            }); 
+        // MANUAL AUTH LOGIC
+        function toggleAuth(mode) {
+            document.getElementById('formLogin').style.display = mode === 'login' ? 'block' : 'none';
+            document.getElementById('formRegister').style.display = mode === 'register' ? 'block' : 'none';
         }
-        
-        function logout() { if(confirm("Keluar akun?")) { document.getElementById('loadingScreen').style.display = 'flex'; auth.signOut().then(() => { window.location.reload(); }); } }
 
+        // FUNGSI LOGIN DENGAN PENGUNCIAN SESI (LOCAL PERSISTENCE)
+        function doLogin() {
+            const e = document.getElementById('loginEmail').value.trim(); const p = document.getElementById('loginPass').value;
+            if(!e || !p) return showToast("Isi email dan password!");
+            
+            document.getElementById('loadingScreen').style.display = 'flex';
+            
+            // Set agar login tersimpan secara lokal dan tidak hilang di-refresh
+            auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+            .then(() => auth.signInWithEmailAndPassword(e, p))
+            .catch(err => {
+                document.getElementById('loadingScreen').style.display = 'none';
+                showDialog("Gagal Masuk", "Email atau Password salah. Silakan coba lagi.", null, true);
+            });
+        }
+
+        // FUNGSI DAFTAR BARU (LANGSUNG ISI PROFIL)
+        function doRegister() {
+            const n = document.getElementById('regName').value.trim(); const e = document.getElementById('regEmail').value.trim(); const p = document.getElementById('regPass').value;
+            const nik = document.getElementById('regNIK').value.trim(); const wa = document.getElementById('regWA').value.trim();
+            const bank = document.getElementById('regBankName').value; const rek = document.getElementById('regBankNum').value.trim();
+
+            if(!n || !e || !p || !nik || !wa || !bank || !rek) return showToast("Mohon lengkapi seluruh data pendaftaran!");
+            if(p.length < 6) return showToast("Password minimal 6 karakter!");
+            
+            document.getElementById('loadingScreen').style.display = 'flex';
+            
+            auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+            .then(() => auth.createUserWithEmailAndPassword(e, p))
+            .then((cred) => {
+                // Update Nama di Akun Firebase
+                cred.user.updateProfile({ displayName: n });
+                
+                // Langsung simpan semua data pendaftaran ke Database Profil
+                return db.collection("users").doc(cred.user.uid).set({ 
+                    name: n, email: e, photo: "", balance: 0, 
+                    nik: nik, whatsapp: wa, bankName: bank, bankNumber: rek,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp() 
+                });
+            })
+            .then(() => {
+                // Pendaftaran Sukses, Loading Screen akan otomatis tertutup oleh onAuthStateChanged
+                showToast("Pendaftaran Berhasil!");
+            })
+            .catch(err => {
+                document.getElementById('loadingScreen').style.display = 'none';
+                showDialog("Gagal Daftar", err.message, null, true);
+            });
+        }
+
+        function requestLogout() { showDialog("Keluar", "Yakin ingin keluar dari akun ini?", () => { document.getElementById('loadingScreen').style.display = 'flex'; auth.signOut().then(() => { window.location.reload(); }); }); }
+
+        // LEADERBOARD
         function loadLeaderboard() {
             db.collection("users").orderBy("balance", "desc").limit(7).onSnapshot(snap => {
                 const list = document.getElementById("leaderboardList"); list.innerHTML = ""; let rank = 1;
                 snap.forEach(doc => {
                     const u = doc.data(); let rankClass = ""; let icon = `#${rank}`;
                     if(rank === 1) { rankClass = "rank-1"; icon = "👑"; } if(rank === 2) { rankClass = "rank-2"; icon = "🥈"; } if(rank === 3) { rankClass = "rank-3"; icon = "🥉"; }
-                    list.innerHTML += `<div class="leaderboard-card ${rankClass}"><div class="rank-num">${icon}</div><img src="${u.photo || 'https://via.placeholder.com/40'}" class="lb-avatar"><div class="lb-info"><div class="lb-name">${u.name || 'Anonim'}</div></div><div class="lb-points">${u.balance || 0} Poin</div></div>`;
+                    let name = u.name || 'Anonim'; let ava = u.photo || (defaultAvatar + name);
+                    list.innerHTML += `<div class="leaderboard-card ${rankClass}"><div class="rank-num">${icon}</div><img src="${ava}" class="lb-avatar"><div class="lb-info"><div class="lb-name">${name}</div></div><div class="lb-points">${u.balance || 0} Poin</div></div>`;
                     rank++;
                 });
             });
         }
 
+        // LOAD PROFILE (MENYEDOT DATA DARI PENDAFTARAN)
         function loadUserProfile() {
             db.collection("users").doc(currentUser.uid).onSnapshot(doc => {
+                let displayName = currentUser.displayName || "Kreator";
                 if(doc.exists) {
                     userData = doc.data(); currentPoints = userData.balance || 0; document.getElementById('displayPoints').innerText = currentPoints;
-                    document.getElementById('profModalName').innerText = userData.name; document.getElementById('profModalImg').src = userData.photo;
+                    document.getElementById('profModalName').innerText = userData.name || displayName; 
+                    document.getElementById('profModalImg').src = userData.photo || (defaultAvatar + (userData.name || displayName));
                     document.getElementById('userNIK').value = userData.nik || ""; document.getElementById('userWA').value = userData.whatsapp || "";
                     document.getElementById('userBankName').value = userData.bankName || ""; document.getElementById('userBankNum').value = userData.bankNumber || "";
-                    if(userData.nik && userData.bankNumber) { const b = document.getElementById('badgeVerif'); b.innerText = "Kreator Terverifikasi"; b.style.background = "#E3F2FD"; b.style.color = "#03754c"; }
-                } else {
-                    db.collection("users").doc(currentUser.uid).set({ name: currentUser.displayName, email: currentUser.email, photo: currentUser.photoURL, balance: 0, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
                 }
             });
         }
@@ -265,13 +380,13 @@
 
         function openProfile() { toggleModal('profileModal', true); }
 
+        // SUBMISSIONS (KARYA)
         function loadSubmissions() {
             db.collection("submissions").where("userId", "==", currentUser.uid).onSnapshot(snap => {
                   const list = document.getElementById('submissionsList'); list.innerHTML = "";
                   if(snap.empty) { list.innerHTML = "<p style='text-align:center; color:#ccc; margin-top:20px;'>Belum ada karya.</p>"; return; }
                   
-                  let dataList = [];
-                  snap.forEach(doc => dataList.push({ id: doc.id, ...doc.data() }));
+                  let dataList = []; snap.forEach(doc => dataList.push({ id: doc.id, ...doc.data() }));
                   dataList.sort((a, b) => { let tA = a.createdAt ? a.createdAt.seconds : 0; let tB = b.createdAt ? b.createdAt.seconds : 0; return tB - tA; });
 
                   dataList.forEach(d => {
@@ -279,30 +394,21 @@
                       if(d.platform == 'facebook') { icon = 'fa-facebook-f'; bg = '#1877F2'; } if(d.platform == 'tiktok') { icon = 'fa-tiktok'; bg = '#000'; }
                       if(d.platform == 'instagram') { icon = 'fa-instagram'; bg = 'linear-gradient(45deg, #f09433, #bc1888)'; } if(d.platform == 'youtube') { icon = 'fa-youtube'; bg = '#FF0000'; }
                       
-                      let badge = `<span class="status-badge badge-pending">Menunggu</span>`;
-                      let reevalBtn = '';
-
+                      let badge = `<span class="status-badge badge-pending">Menunggu</span>`; let reevalBtn = '';
                       if(d.status == 'approved') { 
                           badge = `<span class="status-badge badge-approved">+${d.pointsAwarded} Poin</span>`; 
-                          reevalBtn = `<div style="margin-top:10px; padding-top:8px; border-top:1px dashed #eee; text-align:right;">
-                                          <span onclick="requestReeval('${d.id}')" style="color:var(--primary); font-size:0.75rem; font-weight:600; cursor:pointer; padding:5px 10px; background:#E8F5E9; border-radius:20px;"><i class="fas fa-sync-alt"></i> Ajukan Nilai Ulang</span>
-                                       </div>`;
+                          reevalBtn = `<div style="margin-top:10px; padding-top:8px; border-top:1px dashed #eee; text-align:right;"><span onclick="triggerReeval('${d.id}')" style="color:var(--primary); font-size:0.75rem; font-weight:600; cursor:pointer; padding:5px 10px; background:#E8F5E9; border-radius:20px;"><i class="fas fa-sync-alt"></i> Ajukan Nilai Ulang</span></div>`;
                       } else if(d.status == 'rejected') { 
                           badge = `<span class="status-badge badge-rejected">Ditolak</span>`; 
-                          reevalBtn = `<div style="margin-top:10px; padding-top:8px; border-top:1px dashed #eee; text-align:right;">
-                                          <span onclick="requestReeval('${d.id}')" style="color:var(--danger); font-size:0.75rem; font-weight:600; cursor:pointer; padding:5px 10px; background:#FFEBEE; border-radius:20px;"><i class="fas fa-sync-alt"></i> Ajukan Banding</span>
-                                       </div>`;
+                          reevalBtn = `<div style="margin-top:10px; padding-top:8px; border-top:1px dashed #eee; text-align:right;"><span onclick="triggerReeval('${d.id}')" style="color:var(--danger); font-size:0.75rem; font-weight:600; cursor:pointer; padding:5px 10px; background:#FFEBEE; border-radius:20px;"><i class="fas fa-sync-alt"></i> Ajukan Banding</span></div>`;
                       }
 
-                      // LINK DIBUAT BISA DIKLIK (Biru & Underline)
                       list.innerHTML += `
                         <div class="content-card">
                             <div class="platform-icon" style="background:${bg}"><i class="fab ${icon}"></i></div>
                             <div style="flex-grow:1; overflow:hidden;">
                                 ${badge}
-                                <div style="font-weight:600; font-size:0.9rem; margin-bottom:5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                                    <a href="${d.link}" target="_blank" style="color:#2196F3; text-decoration:none;">${d.link}</a>
-                                </div>
+                                <div style="font-weight:600; font-size:0.9rem; margin-bottom:5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><a href="${d.link}" target="_blank" style="color:#1976D2; text-decoration:none;"><i class="fas fa-external-link-alt"></i> Buka Link Postingan</a></div>
                                 <div style="font-size:0.75rem; color:#888;">${d.createdAt ? new Date(d.createdAt.seconds * 1000).toLocaleDateString() : 'Baru saja'}</div>
                                 ${reevalBtn}
                             </div>
@@ -311,77 +417,74 @@
               });
         }
 
-        function submitKarya() {
-            const link = document.getElementById('inputLink').value; const platform = document.getElementById('inputPlatform').value;
-            if(!link) return showToast("Link tidak boleh kosong!");
-            db.collection("submissions").add({ 
-                userId: currentUser.uid, 
-                userName: userData.name || currentUser.displayName, 
-                userWa: userData.whatsapp || "", // Menyimpan WA untuk Fitur Audit Kurator
-                platform: platform, 
-                link: link, 
-                status: "pending", 
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(), 
-                pointsAwarded: 0 
-            }).then(() => { showToast("Karya terkirim!"); toggleModal('submitModal', false); document.getElementById('inputLink').value = ""; });
-        }
-
-        function requestReeval(docId) {
-            if(confirm("Apakah views/likes karya ini bertambah drastis? Ajukan penilaian ulang ke Kurator?")) {
-                db.collection("submissions").doc(docId).update({ status: "pending", isReval: true, revalRequestedAt: firebase.firestore.FieldValue.serverTimestamp() })
-                .then(() => { showToast("Pengajuan ulang berhasil dikirim!"); });
-            }
-        }
-
-        // FUNGSI LOAD RIWAYAT WD
-        function openWdHistory() {
-            toggleModal('wdHistoryModal', true);
+        function loadWDHistory() {
             db.collection("withdrawals").where("userId", "==", currentUser.uid).onSnapshot(snap => {
-                const list = document.getElementById("wdHistoryList"); list.innerHTML = "";
-                if(snap.empty) { list.innerHTML = "<p style='text-align:center; color:#ccc; font-size:0.9rem;'>Belum ada riwayat penarikan.</p>"; return; }
-                
-                let dataList = [];
-                snap.forEach(doc => dataList.push({ id: doc.id, ...doc.data() }));
-                dataList.sort((a, b) => { let tA = a.requestedAt ? a.requestedAt.seconds : 0; let tB = b.requestedAt ? b.requestedAt.seconds : 0; return tB - tA; });
-
-                dataList.forEach(d => {
-                    const dateStr = d.requestedAt ? new Date(d.requestedAt.seconds * 1000).toLocaleDateString() : '-';
-                    let statusColor = d.status === 'completed' ? '#4CAF50' : (d.status === 'transferred' ? '#FF9800' : '#888');
-                    let statusText = d.status === 'completed' ? 'Selesai' : (d.status === 'transferred' ? 'Menunggu Konfirmasi Anda' : 'Diproses');
-                    
-                    list.innerHTML += `
-                        <div style="background:#f9f9f9; padding:15px; border-radius:12px; margin-bottom:10px; border-left:4px solid ${statusColor};">
-                            <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                                <strong style="color:var(--text-main);">${d.amount} Poin</strong>
-                                <span style="font-size:0.75rem; color:${statusColor}; font-weight:bold;">${statusText}</span>
-                            </div>
-                            <div style="font-size:0.8rem; color:#666;">${dateStr} &bull; ${d.bankDetails.split('-')[0]}</div>
-                        </div>
-                    `;
-                });
-            });
+                  const list = document.getElementById('wdHistoryList'); list.innerHTML = "";
+                  if(snap.empty) { list.innerHTML = "<p style='text-align:center; color:#ccc; margin-top:20px;'>Belum ada penarikan.</p>"; return; }
+                  let dataList = []; snap.forEach(doc => dataList.push({ id: doc.id, ...doc.data() }));
+                  dataList.sort((a, b) => { let tA = a.requestedAt ? a.requestedAt.seconds : 0; let tB = b.requestedAt ? b.requestedAt.seconds : 0; return tB - tA; });
+                  dataList.forEach(d => {
+                      let statusText = d.status == 'completed' ? `<span style="color:green; font-weight:bold;">Selesai</span>` : `<span style="color:#FF9800; font-weight:bold;">Diproses</span>`;
+                      list.innerHTML += `<div class="content-card" style="align-items:center;"><div style="background:#eee; padding:10px; border-radius:12px;"><i class="fas fa-wallet" style="color:var(--primary); font-size:1.5rem;"></i></div><div style="flex-grow:1;"><div style="font-weight:bold; font-size:1rem;">- ${d.amount} Poin</div><div style="font-size:0.8rem; color:#666;">${d.bankDetails}</div><div style="font-size:0.75rem; color:#aaa;">${d.requestedAt ? new Date(d.requestedAt.seconds * 1000).toLocaleDateString() : ''}</div></div><div>${statusText}</div></div>`;
+                  });
+              });
         }
 
-        function requestRedeemCheck() { if(!userData.nik || !userData.bankNumber) { showToast("Lengkapi profil dulu!"); openProfile(); return; } document.getElementById('redeemTarget').innerText = `${userData.bankName} - ${userData.bankNumber}`; toggleModal('redeemModal', true); }
+        function switchView(tab) {
+            document.getElementById('tabKarya').classList.remove('active'); document.getElementById('tabWd').classList.remove('active');
+            document.getElementById('submissionsList').classList.add('hidden'); document.getElementById('wdHistoryList').classList.add('hidden');
+            if(tab === 'karya') { document.getElementById('tabKarya').classList.add('active'); document.getElementById('submissionsList').classList.remove('hidden'); }
+            if(tab === 'wd') { document.getElementById('tabWd').classList.add('active'); document.getElementById('wdHistoryList').classList.remove('hidden'); }
+        }
+
+        // FITUR ANTI LINK GANDA
+        function submitKarya() {
+            const link = document.getElementById('inputLink').value.trim(); const platform = document.getElementById('inputPlatform').value;
+            if(!link) return showToast("Link tidak boleh kosong!");
+            
+            document.getElementById('loadingScreen').style.display = 'flex';
+            
+            db.collection("submissions").where("link", "==", link).get().then((snap) => {
+                if(!snap.empty) {
+                    document.getElementById('loadingScreen').style.display = 'none';
+                    showDialog("Ditolak", "Link konten ini sudah pernah Anda atau orang lain submit sebelumnya!", null, true);
+                } else {
+                    let currentWA = userData.whatsapp || "";
+                    db.collection("submissions").add({ userId: currentUser.uid, userName: userData.name || currentUser.displayName, userWa: currentWA, platform: platform, link: link, status: "pending", createdAt: firebase.firestore.FieldValue.serverTimestamp(), pointsAwarded: 0 })
+                    .then(() => { 
+                        document.getElementById('loadingScreen').style.display = 'none';
+                        showToast("Karya terkirim!"); toggleModal('submitModal', false); document.getElementById('inputLink').value = ""; 
+                    });
+                }
+            }).catch(e => { document.getElementById('loadingScreen').style.display = 'none'; showToast("Error koneksi!"); });
+        }
+
+        function triggerReeval(docId) { showDialog("Penilaian Ulang", "Apakah views/likes karya ini bertambah drastis? Ajukan penilaian ulang ke Kurator?", () => { db.collection("submissions").doc(docId).update({ status: "pending", isReval: true, revalRequestedAt: firebase.firestore.FieldValue.serverTimestamp() }).then(() => { showToast("Pengajuan ulang terkirim!"); }); }); }
+        
+        function requestRedeemCheck() { 
+            if(!userData.nik || !userData.bankNumber) { showToast("Mohon lengkapi profil dulu!"); openProfile(); return; } 
+            document.getElementById('redeemTarget').innerText = `${userData.bankName} - ${userData.bankNumber}`; toggleModal('redeemModal', true); 
+        }
+        
         function processRedeem() {
             const amount = parseInt(document.getElementById('redeemAmount').value); if(amount < 150) return showToast("Minimal 150 Poin!"); if(amount > currentPoints) return showToast("Saldo tidak cukup!");
             db.collection("users").doc(currentUser.uid).update({ balance: firebase.firestore.FieldValue.increment(-amount) });
             db.collection("withdrawals").add({ userId: currentUser.uid, userName: userData.name, userNik: userData.nik, userWa: userData.whatsapp, amount: amount, bankDetails: `${userData.bankName} - ${userData.bankNumber}`, status: "pending", requestedAt: firebase.firestore.FieldValue.serverTimestamp() })
-            .then(() => { showToast("Permintaan diajukan!"); toggleModal('redeemModal', false); });
+            .then(() => { showToast("Permintaan diajukan!"); toggleModal('redeemModal', false); switchView('wd'); });
         }
-        function checkPendingConfirmations() {
-            db.collection("withdrawals").where("userId", "==", currentUser.uid).where("status", "==", "transferred").onSnapshot(snap => {
-                  if(!snap.empty) { const doc = snap.docs[0]; pendingWithdrawalId = doc.id; document.getElementById('confirmBank').innerText = doc.data().bankDetails; document.getElementById('profileNotif').style.display = 'block'; toggleModal('confirmModal', true); } 
-                  else { document.getElementById('profileNotif').style.display = 'none'; }
-              });
-        }
-        function confirmReceipt() {
-            if(!pendingWithdrawalId) return;
-            db.collection("withdrawals").doc(pendingWithdrawalId).update({ status: "completed", completedAt: firebase.firestore.FieldValue.serverTimestamp() })
-            .then(() => { showToast("Selesai. Terima kasih!"); toggleModal('confirmModal', false); });
-        }
+
+        function checkPendingConfirmations() { db.collection("withdrawals").where("userId", "==", currentUser.uid).where("status", "==", "transferred").onSnapshot(snap => { if(!snap.empty) { const doc = snap.docs[0]; pendingWithdrawalId = doc.id; document.getElementById('confirmBank').innerText = doc.data().bankDetails; document.getElementById('profileNotif').style.display = 'block'; toggleModal('confirmModal', true); } else { document.getElementById('profileNotif').style.display = 'none'; } }); }
+        function confirmReceipt() { if(!pendingWithdrawalId) return; db.collection("withdrawals").doc(pendingWithdrawalId).update({ status: "completed", completedAt: firebase.firestore.FieldValue.serverTimestamp() }).then(() => { showToast("Selesai. Terima kasih!"); toggleModal('confirmModal', false); switchView('wd'); }); }
+
         function toggleModal(id, show) { document.getElementById(id).style.display = show ? 'flex' : 'none'; }
         function showToast(msg) { const t = document.getElementById('gclToast'); document.getElementById('toastMsg').innerText = msg; t.classList.add('active'); setTimeout(() => t.classList.remove('active'), 3000); }
+        
+        function showDialog(title, msg, onConfirm, isAlert = false) {
+            document.getElementById('dTitle').innerText = title; document.getElementById('dMsg').innerText = msg; document.getElementById('gclDialog').style.display = 'flex';
+            if(isAlert) { document.getElementById('dBtnCancel').style.display = 'none'; document.getElementById('dBtnOk').innerText = 'Tutup'; } else { document.getElementById('dBtnCancel').style.display = 'block'; document.getElementById('dBtnOk').innerText = 'YA'; }
+            document.getElementById('dBtnOk').onclick = function() { closeDialog(); if(onConfirm) onConfirm(); };
+        }
+        function closeDialog() { document.getElementById('gclDialog').style.display = 'none'; }
     </script>
 </body>
 </html>
