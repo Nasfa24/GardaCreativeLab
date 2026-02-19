@@ -17,29 +17,21 @@
         :root { --primary: #03754c; --primary-dark: #025436; --secondary: #FFC107; --accent: #00E676; --danger: #FF5252; --bg-body: #F5F7FA; --text-main: #1A233A; --radius: 16px; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body { background-color: var(--bg-body); color: var(--text-main); padding-bottom: 100px; -webkit-tap-highlight-color: transparent; }
-
-        /* LOADING & LOGIN SCREEN */
         #loadingScreen, #loginScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         #loadingScreen { background: var(--bg-body); }
         #loginScreen { background: var(--primary); display: none; color: white; padding: 30px; text-align: center; }
         .loader { width: 40px; height: 40px; border: 4px solid #ddd; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .login-btn { background: white; color: var(--text-main); padding: 12px 25px; border-radius: 30px; font-weight: 700; margin-top: 20px; display: flex; align-items: center; gap: 10px; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-
-        /* APP SCREEN & HEADER */
         #appScreen { display: none; }
         .header { background-color: var(--primary); padding: 30px 20px 90px 20px; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; color: white; }
         .header-top { display: flex; justify-content: space-between; align-items: center; }
         .user-profile { display: flex; align-items: center; gap: 10px; cursor: pointer; }
         .user-avatar { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--secondary); object-fit: cover; }
-
-        /* POIN CARD */
         .poin-card { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); margin: -70px 20px 20px 20px; padding: 25px; border-radius: var(--radius); box-shadow: 0 10px 25px rgba(3, 117, 76, 0.25); color: white; display: flex; justify-content: space-between; align-items: center; position: relative; overflow: hidden; }
         .poin-card::after { content: ''; position: absolute; top: -30px; right: -30px; width: 100px; height: 100px; background: var(--accent); opacity: 0.15; border-radius: 50%; }
         .poin-value { font-size: 2.2rem; font-weight: 700; color: var(--secondary); line-height: 1; }
         .btn-redeem { background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 30px; color: white; text-decoration: none; font-size: 0.8rem; font-weight: 600; cursor: pointer; border: 1px solid rgba(255,255,255,0.3); }
-
-        /* LEADERBOARD */
         .leaderboard-area { padding: 0 20px; margin-bottom: 25px; }
         .leaderboard-card { background: white; border-radius: 12px; padding: 10px 15px; margin-bottom: 10px; display: flex; align-items: center; gap: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid #f0f0f0; }
         .rank-1 { background: linear-gradient(45deg, #FFF9C4, #FFFFFF); border: 1px solid #FFD54F; transform: scale(1.02); }
@@ -51,16 +43,12 @@
         .lb-info { flex-grow: 1; }
         .lb-name { font-weight: 600; font-size: 0.9rem; color: var(--text-main); }
         .lb-points { font-weight: 700; color: var(--primary); font-size: 0.9rem; }
-
-        /* CONTENT LIST */
         .content-area { padding: 0 20px; }
         .content-card { background: white; border-radius: var(--radius); padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; gap: 15px; position: relative; }
         .platform-icon { width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; color: white; }
         .icon-tiktok { background: #000; } .icon-instagram { background: linear-gradient(45deg, #f09433, #bc1888); } .icon-facebook { background: #1877F2; } .icon-youtube { background: #FF0000; }
         .status-badge { font-size: 0.7rem; padding: 4px 8px; border-radius: 6px; font-weight: 600; position: absolute; top: 15px; right: 15px; }
         .badge-pending { background: #FFF3E0; color: #FF9800; } .badge-approved { background: #E8F5E9; color: var(--primary); } .badge-rejected { background: #FFEBEE; color: var(--danger); }
-
-        /* FAB & MODALS */
         .fab { position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; background: var(--accent); color: var(--primary-dark); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; box-shadow: 0 4px 20px rgba(0, 230, 118, 0.4); cursor: pointer; z-index: 90; }
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 200; display: none; align-items: flex-end; }
         .modal-content { background: white; width: 100%; border-top-left-radius: 25px; border-top-right-radius: 25px; padding: 30px 25px; animation: slideUp 0.3s ease-out; }
@@ -68,15 +56,11 @@
         .form-label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 5px; margin-top: 15px; }
         .form-input { width: 100%; padding: 12px; border: 2px solid #EEE; border-radius: 12px; font-size: 1rem; outline: none; background: #fff; }
         .btn-submit { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; margin-top: 20px; }
-
-        /* PROFILE MODAL */
         .profile-modal-content { background: #F5F7FA; width: 100%; border-radius: 25px 25px 0 0; padding: 0; overflow-y: auto; max-height: 90vh; position: relative; animation: slideUp 0.3s ease-out; }
         .profile-cover { height: 120px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); position: relative; }
         .profile-avatar-large { width: 100px; height: 100px; border-radius: 50%; border: 4px solid white; position: absolute; bottom: -50px; left: 50%; transform: translateX(-50%); background: white; object-fit: cover; }
         .profile-info { margin-top: 60px; padding: 20px; text-align: center; }
         .profile-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; margin-bottom: 20px; }
-
-        /* TOAST */
         .gcl-toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: rgba(255,255,255,0.95); padding: 12px 20px; border-radius: 50px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 12px; z-index: 9999; transition: all 0.4s; }
         .gcl-toast.active { transform: translateX(-50%) translateY(0); }
         .notif-dot { width: 10px; height: 10px; background: red; border-radius: 50%; border: 2px solid var(--primary); position: absolute; top: 0; right: 0; display: none; }
@@ -120,7 +104,7 @@
         <div class="content-area">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                 <h3 style="font-size:1rem; font-weight:700;">Riwayat Karya</h3>
-                <small onclick="loadData()" style="color:var(--primary); cursor:pointer;"><i class="fas fa-sync-alt"></i> Refresh</small>
+                <small onclick="loadSubmissions()" style="color:var(--primary); cursor:pointer;"><i class="fas fa-sync-alt"></i> Refresh</small>
             </div>
             <div id="submissionsList"><p style="text-align:center; color:#ccc; margin-top:20px;">Memuat data...</p></div>
         </div>
@@ -194,7 +178,6 @@
     <div id="gclToast" class="gcl-toast"><i class="fas fa-info-circle" style="color:var(--primary); font-size:1.2rem;"></i><div id="toastMsg" style="font-size:0.9rem; font-weight:600;">Notifikasi</div></div>
 
     <script>
-        // CONFIG FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyArd38MI6bL4EI6Q4oW-VJA_SnM0Ky35Js",
             authDomain: "gardacreativelab.firebaseapp.com",
@@ -267,12 +250,22 @@
 
         function openProfile() { toggleModal('profileModal', true); }
 
+        // MENGHAPUS orderBy() DARI FIREBASE DAN SORTIR MANUAL DENGAN JAVASCRIPT
         function loadSubmissions() {
-            db.collection("submissions").where("userId", "==", currentUser.uid).orderBy("createdAt", "desc").onSnapshot(snap => {
+            db.collection("submissions").where("userId", "==", currentUser.uid).onSnapshot(snap => {
                   const list = document.getElementById('submissionsList'); list.innerHTML = "";
                   if(snap.empty) { list.innerHTML = "<p style='text-align:center; color:#ccc; margin-top:20px;'>Belum ada karya.</p>"; return; }
-                  snap.forEach(doc => {
-                      const d = doc.data();
+                  
+                  // Sortir Manual (Bypass Firebase Index Error)
+                  let dataList = [];
+                  snap.forEach(doc => dataList.push({ id: doc.id, ...doc.data() }));
+                  dataList.sort((a, b) => {
+                      let tA = a.createdAt ? a.createdAt.seconds : 0;
+                      let tB = b.createdAt ? b.createdAt.seconds : 0;
+                      return tB - tA; // Mengurutkan dari yang paling baru
+                  });
+
+                  dataList.forEach(d => {
                       let icon = 'fa-link'; let bg = '#333';
                       if(d.platform == 'facebook') { icon = 'fa-facebook-f'; bg = '#1877F2'; } if(d.platform == 'tiktok') { icon = 'fa-tiktok'; bg = '#000'; }
                       if(d.platform == 'instagram') { icon = 'fa-instagram'; bg = 'linear-gradient(45deg, #f09433, #bc1888)'; } if(d.platform == 'youtube') { icon = 'fa-youtube'; bg = '#FF0000'; }
@@ -280,18 +273,17 @@
                       let badge = `<span class="status-badge badge-pending">Menunggu</span>`;
                       let reevalBtn = '';
 
-                      // FITUR BARU: TOMBOL AJUKAN ULANG
                       if(d.status == 'approved') { 
                           badge = `<span class="status-badge badge-approved">+${d.pointsAwarded} Poin</span>`; 
                           reevalBtn = `<div style="margin-top:10px; padding-top:8px; border-top:1px dashed #eee; text-align:right;">
-                                          <span onclick="requestReeval('${doc.id}')" style="color:var(--primary); font-size:0.75rem; font-weight:600; cursor:pointer; padding:5px 10px; background:#E8F5E9; border-radius:20px;">
+                                          <span onclick="requestReeval('${d.id}')" style="color:var(--primary); font-size:0.75rem; font-weight:600; cursor:pointer; padding:5px 10px; background:#E8F5E9; border-radius:20px;">
                                               <i class="fas fa-sync-alt"></i> Ajukan Nilai Ulang
                                           </span>
                                        </div>`;
                       } else if(d.status == 'rejected') { 
                           badge = `<span class="status-badge badge-rejected">Ditolak</span>`; 
                           reevalBtn = `<div style="margin-top:10px; padding-top:8px; border-top:1px dashed #eee; text-align:right;">
-                                          <span onclick="requestReeval('${doc.id}')" style="color:var(--danger); font-size:0.75rem; font-weight:600; cursor:pointer; padding:5px 10px; background:#FFEBEE; border-radius:20px;">
+                                          <span onclick="requestReeval('${d.id}')" style="color:var(--danger); font-size:0.75rem; font-weight:600; cursor:pointer; padding:5px 10px; background:#FFEBEE; border-radius:20px;">
                                               <i class="fas fa-sync-alt"></i> Ajukan Banding
                                           </span>
                                        </div>`;
@@ -318,7 +310,6 @@
             .then(() => { showToast("Karya terkirim!"); toggleModal('submitModal', false); document.getElementById('inputLink').value = ""; });
         }
 
-        // FUNGSI BARU: KIRIM PENGAJUAN ULANG KE KURATOR
         function requestReeval(docId) {
             if(confirm("Apakah views/likes karya ini bertambah drastis? Ajukan penilaian ulang ke Kurator?")) {
                 db.collection("submissions").doc(docId).update({
