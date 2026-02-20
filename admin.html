@@ -18,7 +18,8 @@
         #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
         .login-box { background: white; padding: 30px; border-radius: 16px; width: 320px; text-align: center; color: #333; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
         .form-input { width: 100%; padding: 12px; margin-bottom: 15px; border: 2px solid #eee; border-radius: 8px; font-size: 1rem; outline: none; }
-        .btn { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; }
+        .btn { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .btn:active { transform: scale(0.95); }
         .btn-danger { background: var(--danger); }
         .btn-warning { background: #FF9800; color: white; }
         .btn-outline { background: white; color: var(--primary); border: 2px solid var(--primary); }
@@ -191,6 +192,20 @@
             db.collection("submissions").where("status", "==", "approved").onSnapshot(snap => { document.getElementById('statKarya').innerText = snap.size; });
         }
 
+        // FUNGSI BARU: HAPUS KONTEN PERMANEN (DENGAN REVISI SALDO JIKA DIPERLUKAN)
+        function deleteSubmission(docId, userId, pointsAwarded) {
+            showDialog("Hapus Permanen", "Yakin ingin menghapus karya ini? Jika karya ini sudah pernah dapat poin, saldo Kreator akan dipotong secara otomatis.", () => {
+                // Tarik kembali poin jika statusnya pernah approved
+                if(pointsAwarded > 0) {
+                    db.collection("users").doc(userId).update({ balance: firebase.firestore.FieldValue.increment(-pointsAwarded) });
+                }
+                // Hapus dokumen
+                db.collection("submissions").doc(docId).delete()
+                .then(() => showToast("Karya berhasil dihapus!"))
+                .catch(e => showDialog("Error", e.message, null, true));
+            });
+        }
+
         function loadPending() {
             db.collection("submissions").where("status", "==", "pending").onSnapshot(snap => {
                 const div = document.getElementById("listPending"); div.innerHTML = "";
@@ -210,11 +225,9 @@
                     }
 
                     let mul = d.savedMultiplier || 0;
-                    
-                    // FIX: AUTO KOREKSI LINK RELATIF MENJADI ABSOLUT UNTUK KURATOR
-                    let validLink = d.link;
-                    if (!validLink.match(/^https?:\/\//i)) { validLink = 'https://' + validLink; }
+                    let validLink = d.link; if (!validLink.match(/^https?:\/\//i)) { validLink = 'https://' + validLink; }
 
+                    // TAMBAHAN TOMBOL HAPUS DI KARTU ANTRIAN
                     div.innerHTML += `
                         <div class="card ${borderStyle}">
                             <div style="flex-grow:1;">
@@ -225,9 +238,12 @@
                                     <a href="${validLink}" target="_blank" style="font-size:0.9rem; color:#1976D2; text-decoration:none;"><i class="fas fa-external-link-alt"></i> Buka Postingan Asli</a>
                                 </div>
                             </div>
-                            <div style="display:flex; flex-direction:column; gap:8px; min-width:120px;">
-                                <button class="btn btn-warning" style="padding:8px;" onclick="auditWA('${d.userId}', '${validLink}')"><i class="fab fa-whatsapp"></i> Audit via WA</button>
-                                <button class="btn" style="padding:8px;" onclick="openCalc('${d.id}', '${d.userId}', '${d.userName}', '${validLink}', ${d.pointsAwarded || 0}, ${mul})">Nilai Karya</button>
+                            <div style="display:flex; flex-direction:column; gap:8px; min-width:140px;">
+                                <button class="btn btn-warning" style="padding:8px; font-size:0.85rem;" onclick="auditWA('${d.userId}', '${validLink}')"><i class="fab fa-whatsapp"></i> Audit via WA</button>
+                                <div style="display:flex; gap:8px;">
+                                    <button class="btn" style="padding:8px; flex:1; font-size:0.85rem;" onclick="openCalc('${d.id}', '${d.userId}', '${d.userName}', '${validLink}', ${d.pointsAwarded || 0}, ${mul})">Nilai</button>
+                                    <button class="btn btn-danger" style="padding:8px; width:45px; flex:none;" onclick="deleteSubmission('${d.id}', '${d.userId}', ${d.pointsAwarded || 0})" title="Hapus Karya"><i class="fas fa-trash"></i></button>
+                                </div>
                             </div>
                         </div>`;
                 });
@@ -257,12 +273,20 @@
                     let badgeColor = d.status === 'approved' ? 'card-approved' : 'card-rejected';
                     let statusText = d.status === 'approved' ? `<span class="badge badge-points">+${d.pointsAwarded} Poin</span>` : `<span class="badge" style="background:#FFEBEE; color:red;">Ditolak</span>`;
                     let mul = d.savedMultiplier || 0;
-                    
-                    // FIX: KOREKSI LINK DI HISTORY KURATOR
-                    let validLink = d.link;
-                    if (!validLink.match(/^https?:\/\//i)) { validLink = 'https://' + validLink; }
+                    let validLink = d.link; if (!validLink.match(/^https?:\/\//i)) { validLink = 'https://' + validLink; }
 
-                    div.innerHTML += `<div class="card ${badgeColor}"><div style="flex-grow:1;"><b>${d.userName}</b> ${statusText}<br><a href="${validLink}" target="_blank" style="font-size:0.8rem; color:#1976D2; text-decoration:none;"><i class="fas fa-link"></i> Buka Konten</a></div><div><button class="btn btn-outline" style="width:auto; padding:5px 10px; font-size:0.8rem;" onclick="openCalc('${d.id}', '${d.userId}', '${d.userName}', '${validLink}', ${d.pointsAwarded || 0}, ${mul})"><i class="fas fa-edit"></i> Edit Nilai</button></div></div>`;
+                    // TAMBAHAN TOMBOL HAPUS DI KARTU RIWAYAT
+                    div.innerHTML += `
+                        <div class="card ${badgeColor}">
+                            <div style="flex-grow:1;">
+                                <b>${d.userName}</b> ${statusText}<br>
+                                <a href="${validLink}" target="_blank" style="font-size:0.8rem; color:#1976D2; text-decoration:none;"><i class="fas fa-link"></i> Buka Konten</a>
+                            </div>
+                            <div style="display:flex; gap:5px; align-items:center;">
+                                <button class="btn btn-outline" style="width:auto; padding:5px 10px; font-size:0.8rem;" onclick="openCalc('${d.id}', '${d.userId}', '${d.userName}', '${validLink}', ${d.pointsAwarded || 0}, ${mul})"><i class="fas fa-edit"></i> Edit Nilai</button>
+                                <button class="btn btn-danger" style="width:auto; padding:5px 10px; font-size:0.8rem;" onclick="deleteSubmission('${d.id}', '${d.userId}', ${d.pointsAwarded || 0})" title="Hapus Permanen"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>`;
                 });
             });
         }
