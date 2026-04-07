@@ -5,7 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LEBAH KREATIF - Dashboard Kurator</title>
     
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%2303754c%22/><text x=%2250%22 y=%2270%22 font-family=%22Arial, sans-serif%22 font-size=%2270%22 font-weight=%22bold%22 fill=%22white%22 text-anchor=%22middle%22>G</text></svg>">
+    <link rel="icon" href="./logo.png" type="image/png">
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#03754c">
+    <link rel="apple-touch-icon" href="./icon-192.png">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -378,5 +381,15 @@
         }
         function closeDialog() { document.getElementById('gclDialog').style.display = 'none'; }
     </script>
-</body>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('PWA ServiceWorker terdaftar!', reg.scope))
+                    .catch(err => console.log('PWA gagal didaftarkan:', err));
+            });
+        }
+    </script>
+    </body>
 </html>
