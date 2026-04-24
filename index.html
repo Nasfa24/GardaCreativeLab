@@ -262,8 +262,8 @@
                 document.getElementById('loginScreen').style.display = 'none'; 
                 document.getElementById('appScreen').style.display = 'block';
                 
-                document.getElementById('userName').innerText = currentUser.nama_kader; 
-                document.getElementById('userPhoto').src = defaultAvatar + currentUser.nama_kader;
+                document.getElementById('userName').innerText = currentUser.nama; 
+                document.getElementById('userPhoto').src = defaultAvatar + currentUser.nama;
                 
                 // Fetch data dari Supabase
                 loadUserProfile(); 
@@ -321,7 +321,7 @@
             document.getElementById('loadingScreen').style.display = 'flex';
             
             try {
-                // Check if NIK already exists
+                // Cek apakah NIK sudah terdaftar
                 const cekRes = await fetch(`${SUPABASE_URL}/master_kader?nik=eq.${nik}&select=nik`, { headers: headersConfig });
                 const cekData = await cekRes.json();
                 if(cekData.length > 0) {
@@ -329,17 +329,16 @@
                     return showDialog("Gagal Daftar", "NIK ini sudah terdaftar. Silakan langsung Login.", null, true);
                 }
 
-                // Insert to master_kader
+                // Insert ke master_kader
                 const payload = {
-                    id_kader: "KRT-" + Date.now().toString().slice(-6), // Generate ID unik
-                    nama_kader: n,
+                    id_kader: "KRT-" + Date.now().toString().slice(-6), 
+                    nama: n,
                     nik: nik,
                     no_whatsapp: wa,
                     password: p,
                     bank_name: bank,
                     bank_number: rek,
-                    creative_balance: 0,
-                    status_kader: "Aktif"
+                    creative_balance: 0
                 };
 
                 const res = await fetch(`${SUPABASE_URL}/master_kader`, {
@@ -371,12 +370,12 @@
                 const res = await fetch(`${SUPABASE_URL}/master_kader?nik=eq.${currentUser.nik}&select=*`, { headers: headersConfig });
                 const data = await res.json();
                 if(data.length > 0) {
-                    currentUser = data[0]; // Update fresh data
+                    currentUser = data[0]; 
                     localStorage.setItem('lebah_kreatif_user', JSON.stringify(currentUser));
                     
                     document.getElementById('displayPoints').innerText = currentUser.creative_balance || 0;
-                    document.getElementById('profModalName').innerText = currentUser.nama_kader; 
-                    document.getElementById('profModalImg').src = defaultAvatar + currentUser.nama_kader;
+                    document.getElementById('profModalName').innerText = currentUser.nama; 
+                    document.getElementById('profModalImg').src = defaultAvatar + currentUser.nama;
                     
                     document.getElementById('userWA').value = currentUser.no_whatsapp || "";
                     document.getElementById('userBankName').value = currentUser.bank_name || ""; 
@@ -405,7 +404,7 @@
                 if(res.ok) {
                     showToast("Profil berhasil disimpan!"); 
                     toggleModal('profileModal', false);
-                    loadUserProfile(); // Refresh data
+                    loadUserProfile(); 
                 } else { throw new Error("Gagal update"); }
             } catch(e) {
                 alert("GAGAL MENYIMPAN:\n" + e.message);
@@ -418,14 +417,14 @@
 
         async function loadLeaderboard() {
             try {
-                const res = await fetch(`${SUPABASE_URL}/master_kader?order=creative_balance.desc&limit=7&select=nama_kader,creative_balance`, { headers: headersConfig });
+                const res = await fetch(`${SUPABASE_URL}/master_kader?order=creative_balance.desc&limit=7&select=nama,creative_balance`, { headers: headersConfig });
                 const data = await res.json();
                 
                 const list = document.getElementById("leaderboardList"); list.innerHTML = ""; let rank = 1;
                 data.forEach(u => {
                     let rankClass = ""; let icon = `#${rank}`;
                     if(rank === 1) { rankClass = "rank-1"; icon = "👑"; } if(rank === 2) { rankClass = "rank-2"; icon = "🥈"; } if(rank === 3) { rankClass = "rank-3"; icon = "🥉"; }
-                    let name = u.nama_kader || 'Anonim'; let ava = defaultAvatar + name;
+                    let name = u.nama || 'Anonim'; let ava = defaultAvatar + name;
                     list.innerHTML += `<div class="leaderboard-card ${rankClass}"><div class="rank-num">${icon}</div><img src="${ava}" class="lb-avatar"><div class="lb-info"><div class="lb-name">${name}</div></div><div class="lb-points">${u.creative_balance || 0} Poin</div></div>`;
                     rank++;
                 });
@@ -516,7 +515,7 @@
                 // Insert ke Supabase
                 const payload = {
                     user_nik: currentUser.nik,
-                    user_name: currentUser.nama_kader,
+                    user_name: currentUser.nama,
                     platform: platform,
                     link: link,
                     status: "pending",
@@ -532,7 +531,7 @@
                     document.getElementById('loadingScreen').style.display = 'none';
                     showToast("Karya terkirim!"); toggleModal('submitModal', false); 
                     document.getElementById('inputLink').value = ""; 
-                    loadSubmissions(); // Refresh daftar
+                    loadSubmissions(); 
                 } else { throw new Error("Gagal insert"); }
 
             } catch(e) {
@@ -575,7 +574,7 @@
                 // 2. Catat di tabel withdrawals
                 const payload = {
                     user_nik: currentUser.nik,
-                    user_name: currentUser.nama_kader,
+                    user_name: currentUser.nama,
                     amount: amount,
                     bank_details: `${currentUser.bank_name} - ${currentUser.bank_number}`,
                     status: "pending"
@@ -586,7 +585,7 @@
 
                 document.getElementById('loadingScreen').style.display = 'none';
                 showToast("Permintaan diajukan!"); toggleModal('redeemModal', false); 
-                loadUserProfile(); // Refresh saldo
+                loadUserProfile(); 
                 switchView('wd');
             } catch(e) {
                 document.getElementById('loadingScreen').style.display = 'none';
