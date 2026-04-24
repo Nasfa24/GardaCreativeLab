@@ -12,9 +12,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-
     <style>
         :root { --primary: #03754c; --bg: #F5F7FA; --secondary: #FFC107; --danger: #FF5252; --text: #333; }
         body { font-family: 'Poppins', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: var(--text); }
@@ -105,13 +102,13 @@
             </div>
         </div>
 
-        <div id="panel-pending"><div id="listPending"><p style="text-align:center; color:#888;">Memuat data...</p></div></div>
+        <div id="panel-pending"><div id="listPending"><p style="text-align:center; color:#888;"><i class="fas fa-spinner fa-spin"></i> Memuat data...</p></div></div>
         <div id="panel-history" class="hidden">
             <div style="margin-bottom:15px; background:#fff; padding:15px; border-radius:12px; font-size:0.85rem; color:#666;"><i class="fas fa-info-circle"></i> Daftar karya yang sudah dinilai. Klik <b>"Edit Nilai"</b> jika ada karya yang bertambah viral.</div>
-            <div id="listHistory"><p style="text-align:center; color:#888;">Memuat data...</p></div>
+            <div id="listHistory"><p style="text-align:center; color:#888;"><i class="fas fa-spinner fa-spin"></i> Memuat data...</p></div>
         </div>
-        <div id="panel-wd" class="hidden"><div id="listWd"><p style="text-align:center; color:#888;">Memuat data...</p></div></div>
-        <div id="panel-wd-done" class="hidden"><div id="listWdDone"><p style="text-align:center; color:#888;">Memuat data...</p></div></div>
+        <div id="panel-wd" class="hidden"><div id="listWd"><p style="text-align:center; color:#888;"><i class="fas fa-spinner fa-spin"></i> Memuat data...</p></div></div>
+        <div id="panel-wd-done" class="hidden"><div id="listWdDone"><p style="text-align:center; color:#888;"><i class="fas fa-spinner fa-spin"></i> Memuat data...</p></div></div>
     </div>
 
     <div class="modal-overlay" id="calcModal">
@@ -156,8 +153,8 @@
             </div>
 
             <div style="display:flex; gap:10px;">
-                <button class="btn btn-danger" onclick="submitGrade('rejected')"><i class="fas fa-times"></i> Tolak</button>
-                <button class="btn" onclick="submitGrade('approved')"><i class="fas fa-check"></i> Simpan & Approve</button>
+                <button class="btn btn-danger" id="btnTolak" onclick="submitGrade('rejected')"><i class="fas fa-times"></i> Tolak</button>
+                <button class="btn" id="btnApprove" onclick="submitGrade('approved')"><i class="fas fa-check"></i> Simpan & Approve</button>
             </div>
         </div>
     </div>
@@ -176,65 +173,108 @@
     <div id="toast" class="toast">Berhasil!</div>
 
     <script>
-        const ADMIN_USERNAME = "admin"; const ADMIN_PASSWORD = "gcl2026";
-        const firebaseConfig = { apiKey: "AIzaSyArd38MI6bL4EI6Q4oW-VJA_SnM0Ky35Js", authDomain: "gardacreativelab.firebaseapp.com", projectId: "gardacreativelab", storageBucket: "gardacreativelab.firebasestorage.app", messagingSenderId: "983029298298", appId: "1:983029298298:web:5911967a358adb373df7c3" };
-        firebase.initializeApp(firebaseConfig); const db = firebase.firestore();
+        const ADMIN_USERNAME = "admin"; 
+        const ADMIN_PASSWORD = "gcl2026";
+        
+        // ================= KREDENSIAL SUPABASE =================
+        const SUPABASE_URL = "https://hvbrskchlpemypawpqjn.supabase.co/rest/v1";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh2YnJza2NobHBlbXlwYXdwcWpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5MzYzNzksImV4cCI6MjA5MjUxMjM3OX0.0NCroyTHROeQ3SNKOTNZS1H1hxrGy5wGTLGWm5YdOdo"; 
+        const headersConfig = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
 
         let currentDocId = null; let currentUserId = null; let oldScore = 0;
         let activeMultiplier = 0; let currentCalculatedMultiplier = 0;
 
-        window.onload = function() { if (sessionStorage.getItem('gclAdminLoggedIn') === 'true') { document.getElementById('loginOverlay').style.display = 'none'; document.getElementById('dashboard').style.display = 'block'; initDashboard(); } };
+        window.onload = function() { 
+            if (sessionStorage.getItem('gclAdminLoggedIn') === 'true') { 
+                document.getElementById('loginOverlay').style.display = 'none'; 
+                document.getElementById('dashboard').style.display = 'block'; 
+                initDashboard(); 
+            } 
+        };
 
-        function checkLogin() { if(document.getElementById('adminUser').value === ADMIN_USERNAME && document.getElementById('adminPass').value === ADMIN_PASSWORD) { sessionStorage.setItem('gclAdminLoggedIn', 'true'); document.getElementById('loginOverlay').style.display = 'none'; document.getElementById('dashboard').style.display = 'block'; initDashboard(); } else { document.getElementById('loginMsg').innerText = "Username atau Password salah!"; } }
-        function logoutAdmin() { showDialog("Keluar", "Akhiri sesi Kurator?", () => { sessionStorage.removeItem('gclAdminLoggedIn'); window.location.reload(); }); }
-
-        function initDashboard() { loadStats(); loadPending(); loadHistory(); loadWD(); loadWDDone(); }
-
-        function loadStats() {
-            db.collection("users").onSnapshot(snap => { document.getElementById('statKreator').innerText = snap.size; });
-            db.collection("submissions").where("status", "==", "approved").onSnapshot(snap => { document.getElementById('statKarya').innerText = snap.size; });
+        function checkLogin() { 
+            if(document.getElementById('adminUser').value === ADMIN_USERNAME && document.getElementById('adminPass').value === ADMIN_PASSWORD) { 
+                sessionStorage.setItem('gclAdminLoggedIn', 'true'); 
+                document.getElementById('loginOverlay').style.display = 'none'; 
+                document.getElementById('dashboard').style.display = 'block'; 
+                initDashboard(); 
+            } else { 
+                document.getElementById('loginMsg').innerText = "Username atau Password salah!"; 
+            } 
         }
 
-        // FUNGSI BARU: HAPUS KONTEN PERMANEN (DENGAN REVISI SALDO JIKA DIPERLUKAN)
-        function deleteSubmission(docId, userId, pointsAwarded) {
-            showDialog("Hapus Permanen", "Yakin ingin menghapus karya ini? Jika karya ini sudah pernah dapat poin, saldo Kreator akan dipotong secara otomatis.", () => {
-                // Tarik kembali poin jika statusnya pernah approved
-                if(pointsAwarded > 0) {
-                    db.collection("users").doc(userId).update({ balance: firebase.firestore.FieldValue.increment(-pointsAwarded) });
-                }
-                // Hapus dokumen
-                db.collection("submissions").doc(docId).delete()
-                .then(() => showToast("Karya berhasil dihapus!"))
-                .catch(e => showDialog("Error", e.message, null, true));
+        function logoutAdmin() { 
+            showDialog("Keluar", "Akhiri sesi Kurator?", () => { sessionStorage.removeItem('gclAdminLoggedIn'); window.location.reload(); }); 
+        }
+
+        function initDashboard() { 
+            loadStats(); loadPending(); loadHistory(); loadWD(); loadWDDone(); 
+        }
+
+        async function loadStats() {
+            try {
+                let resKader = await fetch(`${SUPABASE_URL}/master_kader?select=nik`, { method: 'HEAD', headers: headersConfig });
+                document.getElementById('statKreator').innerText = resKader.headers.get('content-range') ? resKader.headers.get('content-range').split('/')[1] : 0;
+
+                let resSub = await fetch(`${SUPABASE_URL}/submissions?status=eq.approved&select=id`, { method: 'HEAD', headers: headersConfig });
+                document.getElementById('statKarya').innerText = resSub.headers.get('content-range') ? resSub.headers.get('content-range').split('/')[1] : 0;
+            } catch(e) { console.error("Error stat:", e); }
+        }
+
+        // UPDATE SALDO (Fungsi Bantuan untuk Sinkronisasi Poin)
+        async function updateUserBalance(nik, deltaPoints) {
+            try {
+                let res = await fetch(`${SUPABASE_URL}/master_kader?nik=eq.${nik}&select=creative_balance`, { headers: headersConfig });
+                let data = await res.json();
+                let currentBalance = data[0].creative_balance || 0;
+                let newBalance = currentBalance + deltaPoints;
+                
+                await fetch(`${SUPABASE_URL}/master_kader?nik=eq.${nik}`, {
+                    method: 'PATCH', headers: headersConfig, body: JSON.stringify({ creative_balance: newBalance })
+                });
+            } catch(e) { console.error("Gagal update saldo", e); }
+        }
+
+        function deleteSubmission(docId, userNik, pointsAwarded) {
+            showDialog("Hapus Permanen", "Yakin ingin menghapus karya ini? Jika karya ini sudah pernah dapat poin, saldo Kreator akan dipotong secara otomatis.", async () => {
+                try {
+                    // Tarik kembali poin jika statusnya pernah approved
+                    if(pointsAwarded > 0) { await updateUserBalance(userNik, -pointsAwarded); }
+                    
+                    // Hapus dokumen di Supabase
+                    await fetch(`${SUPABASE_URL}/submissions?id=eq.${docId}`, { method: 'DELETE', headers: headersConfig });
+                    
+                    showToast("Karya berhasil dihapus!");
+                    initDashboard(); // Refresh tampilan
+                } catch(e) { showDialog("Error", "Gagal menghapus data.", null, true); }
             });
         }
 
-        function loadPending() {
-            db.collection("submissions").where("status", "==", "pending").onSnapshot(snap => {
-                const div = document.getElementById("listPending"); div.innerHTML = "";
-                if(snap.empty) { div.innerHTML = "<p style='text-align:center;'>Hore! Tidak ada antrian validasi.</p>"; return; }
+        async function loadPending() {
+            try {
+                let res = await fetch(`${SUPABASE_URL}/submissions?status=eq.pending&order=created_at.desc`, { headers: headersConfig });
+                let dataList = await res.json();
                 
-                let dataList = []; snap.forEach(doc => dataList.push({ id: doc.id, ...doc.data() }));
-                dataList.sort((a, b) => { let tA = a.createdAt ? a.createdAt.seconds : 0; let tB = b.createdAt ? b.createdAt.seconds : 0; return tB - tA; });
+                const div = document.getElementById("listPending"); div.innerHTML = "";
+                if(dataList.length === 0) { div.innerHTML = "<p style='text-align:center;'>Hore! Tidak ada antrian validasi.</p>"; return; }
 
                 dataList.forEach(d => {
-                    const dateStr = d.createdAt ? new Date(d.createdAt.seconds * 1000).toLocaleString() : '-';
+                    const dateStr = new Date(d.created_at).toLocaleString();
                     let typeBadge = `<span class="badge" style="background:#E3F2FD; color:#1976D2;">KARYA BARU</span>`;
                     let borderStyle = "card-pending"; let oldPtsText = "";
 
-                    if(d.isReval) {
+                    if(d.is_reval) {
                         typeBadge = `<span class="badge" style="background:#FFF3E0; color:#FF9800;"><i class="fas fa-sync-alt"></i> REVISI NILAI</span>`;
-                        borderStyle = "card-reval"; oldPtsText = `<div style="font-size:0.8rem; color:#FF9800; font-weight:bold; margin-top:5px;">Poin Sebelumnya: ${d.pointsAwarded || 0}</div>`;
+                        borderStyle = "card-reval"; oldPtsText = `<div style="font-size:0.8rem; color:#FF9800; font-weight:bold; margin-top:5px;">Poin Sebelumnya: ${d.points_awarded || 0}</div>`;
                     }
 
-                    let mul = d.savedMultiplier || 0;
+                    let mul = d.saved_multiplier || 0;
                     let validLink = d.link; if (!validLink.match(/^https?:\/\//i)) { validLink = 'https://' + validLink; }
 
-                    // TAMBAHAN TOMBOL HAPUS DI KARTU ANTRIAN
                     div.innerHTML += `
                         <div class="card ${borderStyle}">
                             <div style="flex-grow:1;">
-                                <b>${d.userName}</b> ${typeBadge} <span class="badge">${d.platform.toUpperCase()}</span><br>
+                                <b>${d.user_name}</b> ${typeBadge} <span class="badge">${d.platform.toUpperCase()}</span><br>
                                 <div style="font-size:0.8rem; color:#666; margin:2px 0;">${dateStr}</div>
                                 ${oldPtsText}
                                 <div style="margin-top:5px; margin-bottom:10px;">
@@ -242,85 +282,113 @@
                                 </div>
                             </div>
                             <div style="display:flex; flex-direction:column; gap:8px; min-width:140px;">
-                                <button class="btn btn-warning" style="padding:8px; font-size:0.85rem;" onclick="auditWA('${d.userId}', '${validLink}')"><i class="fab fa-whatsapp"></i> Audit via WA</button>
+                                <button class="btn btn-warning" style="padding:8px; font-size:0.85rem;" onclick="auditWA('${d.user_nik}', '${validLink}')"><i class="fab fa-whatsapp"></i> Audit via WA</button>
                                 <div style="display:flex; gap:8px;">
-                                    <button class="btn" style="padding:8px; flex:1; font-size:0.85rem;" onclick="openCalc('${d.id}', '${d.userId}', '${d.userName}', '${validLink}', ${d.pointsAwarded || 0}, ${mul})">Nilai</button>
-                                    <button class="btn btn-danger" style="padding:8px; width:45px; flex:none;" onclick="deleteSubmission('${d.id}', '${d.userId}', ${d.pointsAwarded || 0})" title="Hapus Karya"><i class="fas fa-trash"></i></button>
+                                    <button class="btn" style="padding:8px; flex:1; font-size:0.85rem;" onclick="openCalc('${d.id}', '${d.user_nik}', '${d.user_name}', '${validLink}', ${d.points_awarded || 0}, ${mul})">Nilai</button>
+                                    <button class="btn btn-danger" style="padding:8px; width:45px; flex:none;" onclick="deleteSubmission('${d.id}', '${d.user_nik}', ${d.points_awarded || 0})" title="Hapus Karya"><i class="fas fa-trash"></i></button>
                                 </div>
                             </div>
                         </div>`;
                 });
-            });
+            } catch(e) { console.error(e); }
         }
 
-        function auditWA(userId, link) {
-            db.collection("users").doc(userId).get().then(doc => {
-                if(doc.exists && doc.data().whatsapp) {
-                    let wa = doc.data().whatsapp.toString().replace(/\D/g,'');
+        async function auditWA(userNik, link) {
+            try {
+                let res = await fetch(`${SUPABASE_URL}/master_kader?nik=eq.${userNik}&select=no_whatsapp`, { headers: headersConfig });
+                let doc = await res.json();
+                
+                if(doc.length > 0 && doc[0].no_whatsapp) {
+                    let wa = doc[0].no_whatsapp.toString().replace(/\D/g,'');
                     if(wa.startsWith('0')) wa = '62' + wa.substring(1);
                     let msg = `Halo, kak. Saya dari Garda Creative Lab mau konfirmasi, apakah benar konten ini milik anda?\n\nLink: ${link}`;
                     window.open(`https://wa.me/${wa}?text=${encodeURIComponent(msg)}`, '_blank');
                 } else { showDialog("Gagal", "Kreator ini belum mengisi nomor WhatsApp di profilnya.", null, true); }
-            }).catch(e => { showToast("Error mengambil data WA"); });
+            } catch(e) { showToast("Error mengambil data WA"); }
         }
 
-        function loadHistory() {
-            db.collection("submissions").where("status", "in", ["approved", "rejected"]).onSnapshot(snap => {
-                const div = document.getElementById("listHistory"); div.innerHTML = "";
-                if(snap.empty) { div.innerHTML = "<p style='text-align:center;'>Belum ada riwayat penilaian.</p>"; return; }
-                let dataList = []; snap.forEach(doc => dataList.push({ id: doc.id, ...doc.data() }));
-                dataList.sort((a, b) => { let tA = a.createdAt ? a.createdAt.seconds : 0; let tB = b.createdAt ? b.createdAt.seconds : 0; return tB - tA; });
-                let top50 = dataList.slice(0, 50);
+        async function loadHistory() {
+            try {
+                let res = await fetch(`${SUPABASE_URL}/submissions?status=in.(approved,rejected)&order=created_at.desc&limit=50`, { headers: headersConfig });
+                let dataList = await res.json();
                 
-                top50.forEach(d => {
+                const div = document.getElementById("listHistory"); div.innerHTML = "";
+                if(dataList.length === 0) { div.innerHTML = "<p style='text-align:center;'>Belum ada riwayat penilaian.</p>"; return; }
+                
+                dataList.forEach(d => {
                     let badgeColor = d.status === 'approved' ? 'card-approved' : 'card-rejected';
-                    let statusText = d.status === 'approved' ? `<span class="badge badge-points">+${d.pointsAwarded} Poin</span>` : `<span class="badge" style="background:#FFEBEE; color:red;">Ditolak</span>`;
-                    let mul = d.savedMultiplier || 0;
+                    let statusText = d.status === 'approved' ? `<span class="badge badge-points">+${d.points_awarded} Poin</span>` : `<span class="badge" style="background:#FFEBEE; color:red;">Ditolak</span>`;
+                    let mul = d.saved_multiplier || 0;
                     let validLink = d.link; if (!validLink.match(/^https?:\/\//i)) { validLink = 'https://' + validLink; }
 
-                    // TAMBAHAN TOMBOL HAPUS DI KARTU RIWAYAT
                     div.innerHTML += `
                         <div class="card ${badgeColor}">
                             <div style="flex-grow:1;">
-                                <b>${d.userName}</b> ${statusText}<br>
+                                <b>${d.user_name}</b> ${statusText}<br>
                                 <a href="${validLink}" target="_blank" style="font-size:0.8rem; color:#1976D2; text-decoration:none;"><i class="fas fa-link"></i> Buka Konten</a>
                             </div>
                             <div style="display:flex; gap:5px; align-items:center;">
-                                <button class="btn btn-outline" style="width:auto; padding:5px 10px; font-size:0.8rem;" onclick="openCalc('${d.id}', '${d.userId}', '${d.userName}', '${validLink}', ${d.pointsAwarded || 0}, ${mul})"><i class="fas fa-edit"></i> Edit Nilai</button>
-                                <button class="btn btn-danger" style="width:auto; padding:5px 10px; font-size:0.8rem;" onclick="deleteSubmission('${d.id}', '${d.userId}', ${d.pointsAwarded || 0})" title="Hapus Permanen"><i class="fas fa-trash"></i></button>
+                                <button class="btn btn-outline" style="width:auto; padding:5px 10px; font-size:0.8rem;" onclick="openCalc('${d.id}', '${d.user_nik}', '${d.user_name}', '${validLink}', ${d.points_awarded || 0}, ${mul})"><i class="fas fa-edit"></i> Edit Nilai</button>
+                                <button class="btn btn-danger" style="width:auto; padding:5px 10px; font-size:0.8rem;" onclick="deleteSubmission('${d.id}', '${d.user_nik}', ${d.points_awarded || 0})" title="Hapus Permanen"><i class="fas fa-trash"></i></button>
                             </div>
                         </div>`;
                 });
-            });
+            } catch(e) { console.error(e); }
         }
 
-        function loadWD() {
-            db.collection("withdrawals").where("status", "in", ["pending", "transferred"]).onSnapshot(snap => {
+        async function loadWD() {
+            try {
+                let res = await fetch(`${SUPABASE_URL}/withdrawals?status=in.(pending,transferred)&order=requested_at.desc`, { headers: headersConfig });
+                let dataList = await res.json();
+                
                 const div = document.getElementById("listWd"); div.innerHTML = "";
-                if(snap.empty) { div.innerHTML = "<p style='text-align:center;'>Tidak ada antrian pencairan.</p>"; return; }
-                snap.forEach(doc => {
-                    const d = doc.data(); let cleanWA = d.userWa ? d.userWa.toString().replace(/\D/g,'') : ''; if(cleanWA.startsWith('0')) cleanWA = '62' + cleanWA.substring(1);
-                    const linkWA = `https://wa.me/${cleanWA}?text=${encodeURIComponent(`Halo, ${d.userName}, saya Kurator GCL. Penarikan Dana sebesar ${d.amount} Poin telah ditransfer, mohon cek dan klik tombol Terima di Aplikasi.`)}`;
-                    let action = d.status === "pending" ? `<button class="btn" style="background:#4CAF50;" onclick="markTransfer('${doc.id}', '${linkWA}')"><i class="fab fa-whatsapp"></i> Sudah Transfer</button>` : `<span style="color:green; font-size:0.8rem; font-weight:bold;">✅ Menunggu Kreator Terima</span>`;
-                    div.innerHTML += `<div class="card card-wd" style="display:block;"><div style="display:flex; justify-content:space-between; margin-bottom:10px;"><h3 style="color:var(--primary); margin:0;">${d.amount} Poin</h3><small>${d.status.toUpperCase()}</small></div><p style="margin:5px 0;"><b>${d.userName}</b> (NIK: ${d.userNik || '-'})</p><div style="background:#eee; padding:10px; border-radius:8px; font-size:0.9rem; margin-bottom:10px;">Bank: <b>${d.bankDetails}</b><br>WA: ${d.userWa}</div>${action}</div>`;
+                if(dataList.length === 0) { div.innerHTML = "<p style='text-align:center;'>Tidak ada antrian pencairan.</p>"; return; }
+                
+                dataList.forEach(d => {
+                    let action = d.status === "pending" ? `<button class="btn" style="background:#4CAF50;" onclick="markTransfer('${d.id}', '${d.user_nik}', '${d.user_name}', '${d.amount}')"><i class="fab fa-whatsapp"></i> Sudah Transfer</button>` : `<span style="color:green; font-size:0.8rem; font-weight:bold;">✅ Menunggu Kreator Terima</span>`;
+                    
+                    div.innerHTML += `<div class="card card-wd" style="display:block;"><div style="display:flex; justify-content:space-between; margin-bottom:10px;"><h3 style="color:var(--primary); margin:0;">${d.amount} Poin</h3><small>${d.status.toUpperCase()}</small></div><p style="margin:5px 0;"><b>${d.user_name}</b> (NIK: ${d.user_nik || '-'})</p><div style="background:#eee; padding:10px; border-radius:8px; font-size:0.9rem; margin-bottom:10px;">Bank: <b>${d.bank_details}</b></div>${action}</div>`;
                 });
-            });
+            } catch(e) { console.error(e); }
         }
 
-        function loadWDDone() {
-            db.collection("withdrawals").where("status", "==", "completed").onSnapshot(snap => {
+        async function loadWDDone() {
+            try {
+                let res = await fetch(`${SUPABASE_URL}/withdrawals?status=eq.completed&order=requested_at.desc&limit=50`, { headers: headersConfig });
+                let dataList = await res.json();
+                
                 const div = document.getElementById("listWdDone"); div.innerHTML = "";
-                if(snap.empty) { div.innerHTML = "<p style='text-align:center;'>Belum ada histori selesai.</p>"; return; }
-                let dataList = []; snap.forEach(doc => dataList.push({ id: doc.id, ...doc.data() }));
-                dataList.sort((a, b) => { let tA = a.completedAt ? a.completedAt.seconds : 0; let tB = b.completedAt ? b.completedAt.seconds : 0; return tB - tA; });
-                let top50 = dataList.slice(0, 50);
-                top50.forEach(d => {
-                    div.innerHTML += `<div class="card" style="border-left-color:green; display:block;"><div style="display:flex; justify-content:space-between; margin-bottom:5px;"><h3 style="color:green; margin:0;">${d.amount} Poin</h3><small>${d.completedAt ? new Date(d.completedAt.seconds * 1000).toLocaleDateString() : ''}</small></div><p style="margin:0 0 5px 0;"><b>${d.userName}</b></p><div style="font-size:0.85rem; color:#666;">Ke: ${d.bankDetails}</div></div>`;
+                if(dataList.length === 0) { div.innerHTML = "<p style='text-align:center;'>Belum ada histori selesai.</p>"; return; }
+                
+                dataList.forEach(d => {
+                    div.innerHTML += `<div class="card" style="border-left-color:green; display:block;"><div style="display:flex; justify-content:space-between; margin-bottom:5px;"><h3 style="color:green; margin:0;">${d.amount} Poin</h3><small>${new Date(d.requested_at).toLocaleDateString()}</small></div><p style="margin:0 0 5px 0;"><b>${d.user_name}</b></p><div style="font-size:0.85rem; color:#666;">Ke: ${d.bank_details}</div></div>`;
                 });
-            });
+            } catch(e) { console.error(e); }
         }
 
-        function markTransfer(docId, waLink) { showDialog("Konfirmasi Transfer", "Pastikan Anda sudah mentransfer uang via M-Banking. Lanjut update status?", () => { db.collection("withdrawals").doc(docId).update({ status: "transferred" }).then(() => { window.open(waLink, '_blank'); }); }); }
+        function markTransfer(docId, userNik, userName, amount) { 
+            showDialog("Konfirmasi Transfer", "Pastikan Anda sudah mentransfer uang via M-Banking. Lanjut update status?", async () => { 
+                try {
+                    await fetch(`${SUPABASE_URL}/withdrawals?id=eq.${docId}`, {
+                        method: 'PATCH', headers: headersConfig, body: JSON.stringify({ status: "transferred" })
+                    });
+                    
+                    // Ambil nomor WA dari master_kader untuk dihubungi
+                    let resWA = await fetch(`${SUPABASE_URL}/master_kader?nik=eq.${userNik}&select=no_whatsapp`, { headers: headersConfig });
+                    let dataWA = await resWA.json();
+                    
+                    if(dataWA.length > 0 && dataWA[0].no_whatsapp) {
+                        let cleanWA = dataWA[0].no_whatsapp.toString().replace(/\D/g,''); 
+                        if(cleanWA.startsWith('0')) cleanWA = '62' + cleanWA.substring(1);
+                        const linkWA = `https://wa.me/${cleanWA}?text=${encodeURIComponent(`Halo, ${userName}, saya Kurator GCL. Penarikan Dana sebesar ${amount} Poin telah ditransfer, mohon cek dan klik tombol Terima di Aplikasi Lebah Kreatif.`)}`;
+                        window.open(linkWA, '_blank');
+                    } else {
+                        showToast("Status diupdate. Tapi nomor WA Kreator tidak ditemukan.");
+                    }
+                    initDashboard(); // Refresh layar
+                } catch(e) { showToast("Gagal update status"); }
+            }); 
+        }
 
         function openCalc(docId, userId, userName, link, currentPts, savedMult = 0) {
             currentDocId = docId; currentUserId = userId; oldScore = currentPts; activeMultiplier = savedMult;
@@ -358,18 +426,40 @@
             document.getElementById('c_result').innerText = Math.round(finalScore);
         }
 
-        function submitGrade(newStatus) {
+        async function submitGrade(newStatus) {
+            document.getElementById('btnApprove').disabled = true; document.getElementById('btnTolak').disabled = true;
+            document.getElementById('btnApprove').innerText = "Menyimpan...";
+            
             let finalPoints = parseInt(document.getElementById('c_result').innerText) || 0;
             if (newStatus === 'rejected') { finalPoints = 0; currentCalculatedMultiplier = 0; }
             let delta = finalPoints - oldScore;
 
-            db.collection("submissions").doc(currentDocId).update({
-                status: newStatus, pointsAwarded: finalPoints, savedMultiplier: currentCalculatedMultiplier, isReval: false, evaluatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(() => {
-                if(delta !== 0) { return db.collection("users").doc(currentUserId).update({ balance: firebase.firestore.FieldValue.increment(delta) }); }
-            }).then(() => {
-                closeModal(); showToast(`Selesai! Saldo disesuaikan (${delta > 0 ? '+'+delta : delta} Poin).`);
-            }).catch(e => showDialog("Error", e.message, null, true));
+            try {
+                // Update Submissions
+                await fetch(`${SUPABASE_URL}/submissions?id=eq.${currentDocId}`, {
+                    method: 'PATCH', headers: headersConfig, 
+                    body: JSON.stringify({ 
+                        status: newStatus, 
+                        points_awarded: finalPoints, 
+                        saved_multiplier: currentCalculatedMultiplier, 
+                        is_reval: false 
+                    })
+                });
+
+                // Update Balance di master_kader jika ada selisih
+                if(delta !== 0) {
+                    await updateUserBalance(currentUserId, delta);
+                }
+
+                closeModal(); 
+                showToast(`Selesai! Saldo disesuaikan (${delta > 0 ? '+'+delta : delta} Poin).`);
+                initDashboard(); // Auto-refresh layar admin
+            } catch(e) {
+                showDialog("Error", "Gagal menyimpan penilaian.", null, true);
+            } finally {
+                document.getElementById('btnApprove').disabled = false; document.getElementById('btnTolak').disabled = false;
+                document.getElementById('btnApprove').innerHTML = `<i class="fas fa-check"></i> Simpan & Approve`;
+            }
         }
 
         function switchTab(tab) { document.getElementById('panel-pending').classList.add('hidden'); document.getElementById('panel-history').classList.add('hidden'); document.getElementById('panel-wd').classList.add('hidden'); document.getElementById('panel-wd-done').classList.add('hidden'); document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); document.getElementById('panel-'+tab).classList.remove('hidden'); event.target.classList.add('active'); }
@@ -386,10 +476,9 @@
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('PWA ServiceWorker terdaftar!', reg.scope))
                     .catch(err => console.log('PWA gagal didaftarkan:', err));
             });
         }
     </script>
-    </body>
+</body>
 </html>
