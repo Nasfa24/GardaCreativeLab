@@ -12,10 +12,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-
     <style>
         :root { --primary: #03754c; --primary-dark: #025436; --secondary: #FFC107; --accent: #00E676; --danger: #FF5252; --bg-body: #F5F7FA; --text-main: #1A233A; --radius: 16px; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
@@ -106,8 +102,8 @@
         <p style="opacity:0.8; font-size:0.9rem; margin-bottom:30px;">Platform Kreator Masa Depan</p>
         
         <div class="auth-box" id="formLogin">
-            <h3 style="margin-bottom:20px; color:var(--primary);">Masuk Akun</h3>
-            <input type="email" id="loginEmail" class="auth-input" placeholder="Alamat Email">
+            <h3 style="margin-bottom:20px; color:var(--primary);">Masuk Akun (Gunakan NIK)</h3>
+            <input type="number" id="loginNIK" class="auth-input" placeholder="16 Digit NIK">
             <input type="password" id="loginPass" class="auth-input" placeholder="Password">
             <button class="auth-btn" onclick="doLogin()">MASUK</button>
             <div class="auth-link" onclick="toggleAuth('register')">Belum punya akun? Daftar di sini</div>
@@ -117,13 +113,11 @@
             <h3 style="margin-bottom:20px; color:var(--primary); text-align:center;">Daftar Kreator</h3>
             <label style="font-size:0.8rem; font-weight:bold; color:#555; margin-left:5px;">Akun Login</label>
             <input type="text" id="regName" class="auth-input" placeholder="Nama Lengkap">
-            <input type="email" id="regEmail" class="auth-input" placeholder="Alamat Email Aktif">
+            <input type="number" id="regNIK" class="auth-input" placeholder="16 Digit NIK KTP">
             <input type="password" id="regPass" class="auth-input" placeholder="Buat Password (Min 6 Karakter)">
             
             <label style="font-size:0.8rem; font-weight:bold; color:#555; margin-left:5px; margin-top:10px; display:block;">Data Pencairan (Wajib)</label>
-            <input type="number" id="regNIK" class="auth-input" placeholder="16 Digit NIK KTP">
             <input type="number" id="regWA" class="auth-input" placeholder="No. WhatsApp (Contoh: 0812...)">
-            
             <select id="regBankName" class="auth-input" style="color:#555;">
                 <option value="" disabled selected>Pilih Bank / E-Wallet</option>
                 <option value="Bank Mandiri">Bank Mandiri</option><option value="Bank BCA">Bank BCA</option>
@@ -207,8 +201,7 @@
                 <div class="profile-name" id="profModalName" style="font-weight:bold; font-size:1.2rem;">...</div>
                 <div class="profile-badge" id="badgeVerif" style="background:#E3F2FD; color:#03754c;">Kreator Terverifikasi</div>
                 <div style="text-align:left; margin-top:10px;">
-                    <h4 style="color:var(--primary); border-bottom:2px solid #eee; padding-bottom:5px; margin-bottom:15px;">Data Kreator (Bisa Diedit)</h4>
-                    <label class="form-label">NIK (KTP)</label><input type="number" id="userNIK" class="form-input" placeholder="16 Digit NIK">
+                    <h4 style="color:var(--primary); border-bottom:2px solid #eee; padding-bottom:5px; margin-bottom:15px;">Data Keuangan & Kontak</h4>
                     <label class="form-label">No. WhatsApp</label><input type="number" id="userWA" class="form-input" placeholder="Contoh: 08123456789">
                     <label class="form-label">Nama Bank / E-Wallet</label>
                     <select id="userBankName" class="form-input">
@@ -252,248 +245,379 @@
     <div id="gclToast" class="gcl-toast"><i class="fas fa-info-circle" style="color:var(--primary); font-size:1.2rem;"></i><div id="toastMsg" style="font-size:0.9rem; font-weight:600;">Notifikasi</div></div>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyArd38MI6bL4EI6Q4oW-VJA_SnM0Ky35Js",
-            authDomain: "gardacreativelab.firebaseapp.com",
-            projectId: "gardacreativelab",
-            storageBucket: "gardacreativelab.firebasestorage.app",
-            messagingSenderId: "983029298298",
-            appId: "1:983029298298:web:5911967a358adb373df7c3"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const auth = firebase.auth();
+        // ================= KREDENSIAL SUPABASE =================
+        const SUPABASE_URL = "https://hvbrskchlpemypawpqjn.supabase.co/rest/v1";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh2YnJza2NobHBlbXlwYXdwcWpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5MzYzNzksImV4cCI6MjA5MjUxMjM3OX0.0NCroyTHROeQ3SNKOTNZS1H1hxrGy5wGTLGWm5YdOdo"; 
+        const headersConfig = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
 
-        let currentUser = null; let userData = {}; let currentPoints = 0; let pendingWithdrawalId = null;
+        let currentUser = null; 
+        let pendingWithdrawalId = null;
         let defaultAvatar = "https://ui-avatars.com/api/?background=03754c&color=fff&name=";
 
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                currentUser = user; 
+        window.onload = function() {
+            const session = localStorage.getItem('lebah_kreatif_user');
+            if (session) {
+                currentUser = JSON.parse(session);
                 document.getElementById('loadingScreen').style.display = 'none'; 
                 document.getElementById('loginScreen').style.display = 'none'; 
                 document.getElementById('appScreen').style.display = 'block';
                 
-                let displayName = user.displayName || "Kreator";
-                document.getElementById('userName').innerText = displayName; 
-                document.getElementById('userPhoto').src = user.photoURL || (defaultAvatar + displayName);
+                document.getElementById('userName').innerText = currentUser.nama_kader; 
+                document.getElementById('userPhoto').src = defaultAvatar + currentUser.nama_kader;
                 
-                loadUserProfile(); loadSubmissions(); loadWDHistory(); loadLeaderboard(); checkPendingConfirmations();
+                // Fetch data dari Supabase
+                loadUserProfile(); 
+                loadLeaderboard();
+                loadSubmissions(); 
+                loadWDHistory(); 
+                checkPendingConfirmations();
             } else {
                 document.getElementById('loadingScreen').style.display = 'none'; 
                 document.getElementById('loginScreen').style.display = 'flex'; 
                 document.getElementById('appScreen').style.display = 'none';
             }
-        });
+        };
 
         function toggleAuth(mode) {
             document.getElementById('formLogin').style.display = mode === 'login' ? 'block' : 'none';
             document.getElementById('formRegister').style.display = mode === 'register' ? 'block' : 'none';
         }
 
-        function doLogin() {
-            const e = document.getElementById('loginEmail').value.trim(); const p = document.getElementById('loginPass').value;
-            if(!e || !p) return showToast("Isi email dan password!");
+        async function doLogin() {
+            const nik = document.getElementById('loginNIK').value.trim(); 
+            const p = document.getElementById('loginPass').value;
+            if(!nik || !p) return showToast("Isi NIK dan password!");
+            
             document.getElementById('loadingScreen').style.display = 'flex';
-            auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
-            .then(() => auth.signInWithEmailAndPassword(e, p))
-            .catch(err => {
+            
+            try {
+                const res = await fetch(`${SUPABASE_URL}/master_kader?nik=eq.${nik}&password=eq.${p}&select=*`, { headers: headersConfig });
+                const data = await res.json();
+                
+                if(data.length > 0) {
+                    localStorage.setItem('lebah_kreatif_user', JSON.stringify(data[0]));
+                    window.location.reload();
+                } else {
+                    document.getElementById('loadingScreen').style.display = 'none';
+                    showDialog("Gagal Masuk", "NIK atau Password salah. Jika Anda Kader Lebah Bergerak, gunakan NIK dan sandi yang sama.", null, true);
+                }
+            } catch(e) {
                 document.getElementById('loadingScreen').style.display = 'none';
-                showDialog("Gagal Masuk", "Email atau Password salah. Silakan coba lagi.", null, true);
-            });
+                showToast("Gagal terhubung ke server.");
+            }
         }
 
-        function doRegister() {
-            const n = document.getElementById('regName').value.trim(); const e = document.getElementById('regEmail').value.trim(); const p = document.getElementById('regPass').value;
-            const nik = document.getElementById('regNIK').value.trim(); const wa = document.getElementById('regWA').value.trim();
-            const bank = document.getElementById('regBankName').value; const rek = document.getElementById('regBankNum').value.trim();
+        async function doRegister() {
+            const n = document.getElementById('regName').value.trim(); 
+            const nik = document.getElementById('regNIK').value.trim(); 
+            const p = document.getElementById('regPass').value;
+            const wa = document.getElementById('regWA').value.trim();
+            const bank = document.getElementById('regBankName').value; 
+            const rek = document.getElementById('regBankNum').value.trim();
 
-            if(!n || !e || !p || !nik || !wa || !bank || !rek) return showToast("Mohon lengkapi seluruh data pendaftaran!");
+            if(!n || !nik || !p || !wa || !bank || !rek) return showToast("Lengkapi semua data!");
             if(p.length < 6) return showToast("Password minimal 6 karakter!");
             
             document.getElementById('loadingScreen').style.display = 'flex';
             
-            auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
-            .then(() => auth.createUserWithEmailAndPassword(e, p))
-            .then((cred) => {
-                cred.user.updateProfile({ displayName: n });
-                return db.collection("users").doc(cred.user.uid).set({ 
-                    name: n, email: e, photo: "", balance: 0, 
-                    nik: nik, whatsapp: wa, bankName: bank, bankNumber: rek,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp() 
-                });
-            })
-            .then(() => { showToast("Pendaftaran Berhasil!"); })
-            .catch(err => {
-                document.getElementById('loadingScreen').style.display = 'none';
-                showDialog("Gagal Daftar", err.message, null, true);
-            });
-        }
-
-        function requestLogout() { showDialog("Keluar", "Yakin ingin keluar dari akun ini?", () => { document.getElementById('loadingScreen').style.display = 'flex'; auth.signOut().then(() => { window.location.reload(); }); }); }
-
-        function loadLeaderboard() {
-            db.collection("users").orderBy("balance", "desc").limit(7).onSnapshot(snap => {
-                const list = document.getElementById("leaderboardList"); list.innerHTML = ""; let rank = 1;
-                snap.forEach(doc => {
-                    const u = doc.data(); let rankClass = ""; let icon = `#${rank}`;
-                    if(rank === 1) { rankClass = "rank-1"; icon = "👑"; } if(rank === 2) { rankClass = "rank-2"; icon = "🥈"; } if(rank === 3) { rankClass = "rank-3"; icon = "🥉"; }
-                    let name = u.name || 'Anonim'; let ava = u.photo || (defaultAvatar + name);
-                    list.innerHTML += `<div class="leaderboard-card ${rankClass}"><div class="rank-num">${icon}</div><img src="${ava}" class="lb-avatar"><div class="lb-info"><div class="lb-name">${name}</div></div><div class="lb-points">${u.balance || 0} Poin</div></div>`;
-                    rank++;
-                });
-            });
-        }
-
-        function loadUserProfile() {
-            db.collection("users").doc(currentUser.uid).onSnapshot(doc => {
-                let displayName = currentUser.displayName || "Kreator";
-                if(doc.exists) {
-                    userData = doc.data(); currentPoints = userData.balance || 0; document.getElementById('displayPoints').innerText = currentPoints;
-                    document.getElementById('profModalName').innerText = userData.name || displayName; 
-                    document.getElementById('profModalImg').src = userData.photo || (defaultAvatar + (userData.name || displayName));
-                    document.getElementById('userNIK').value = userData.nik || ""; document.getElementById('userWA').value = userData.whatsapp || "";
-                    document.getElementById('userBankName').value = userData.bankName || ""; document.getElementById('userBankNum').value = userData.bankNumber || "";
+            try {
+                // Check if NIK already exists
+                const cekRes = await fetch(`${SUPABASE_URL}/master_kader?nik=eq.${nik}&select=nik`, { headers: headersConfig });
+                const cekData = await cekRes.json();
+                if(cekData.length > 0) {
+                    document.getElementById('loadingScreen').style.display = 'none';
+                    return showDialog("Gagal Daftar", "NIK ini sudah terdaftar. Silakan langsung Login.", null, true);
                 }
-            });
+
+                // Insert to master_kader
+                const payload = {
+                    id_kader: "KRT-" + Date.now().toString().slice(-6), // Generate ID unik
+                    nama_kader: n,
+                    nik: nik,
+                    no_whatsapp: wa,
+                    password: p,
+                    bank_name: bank,
+                    bank_number: rek,
+                    creative_balance: 0,
+                    status_kader: "Aktif"
+                };
+
+                const res = await fetch(`${SUPABASE_URL}/master_kader`, {
+                    method: 'POST', headers: headersConfig, body: JSON.stringify(payload)
+                });
+
+                if(res.ok) {
+                    const data = await res.json();
+                    localStorage.setItem('lebah_kreatif_user', JSON.stringify(data[0]));
+                    window.location.reload();
+                } else {
+                    throw new Error("Gagal menyimpan ke database.");
+                }
+            } catch(e) {
+                document.getElementById('loadingScreen').style.display = 'none';
+                showDialog("Error", "Gagal mendaftar. Periksa koneksi Anda.", null, true);
+            }
         }
 
-        function saveProfile() {
-            const nik = document.getElementById('userNIK').value; 
+        function requestLogout() { 
+            showDialog("Keluar", "Yakin ingin keluar?", () => { 
+                localStorage.removeItem('lebah_kreatif_user'); 
+                window.location.reload(); 
+            }); 
+        }
+
+        async function loadUserProfile() {
+            try {
+                const res = await fetch(`${SUPABASE_URL}/master_kader?nik=eq.${currentUser.nik}&select=*`, { headers: headersConfig });
+                const data = await res.json();
+                if(data.length > 0) {
+                    currentUser = data[0]; // Update fresh data
+                    localStorage.setItem('lebah_kreatif_user', JSON.stringify(currentUser));
+                    
+                    document.getElementById('displayPoints').innerText = currentUser.creative_balance || 0;
+                    document.getElementById('profModalName').innerText = currentUser.nama_kader; 
+                    document.getElementById('profModalImg').src = defaultAvatar + currentUser.nama_kader;
+                    
+                    document.getElementById('userWA').value = currentUser.no_whatsapp || "";
+                    document.getElementById('userBankName').value = currentUser.bank_name || ""; 
+                    document.getElementById('userBankNum').value = currentUser.bank_number || "";
+                }
+            } catch(e) { console.error("Gagal load profil", e); }
+        }
+
+        async function saveProfile() {
             const wa = document.getElementById('userWA').value; 
             const bank = document.getElementById('userBankName').value; 
             const num = document.getElementById('userBankNum').value;
-            
-            if(!nik || !wa || !bank || !num) return showToast("Semua data wajib diisi!");
+            if(!wa || !bank || !num) return showToast("Semua data wajib diisi!");
             
             const btn = event.currentTarget || event.srcElement;
             const originalText = btn.innerHTML;
             btn.innerHTML = "<i class='fas fa-spinner fa-spin'></i> Menyimpan...";
             btn.disabled = true;
 
-            db.collection("users").doc(currentUser.uid).update({ 
-                nik: nik, 
-                whatsapp: wa, 
-                bankName: bank, 
-                bankNumber: num, 
-                lastUpdated: firebase.firestore.FieldValue.serverTimestamp() 
-            })
-            .then(() => { 
-                showToast("Profil berhasil disimpan!"); 
-                toggleModal('profileModal', false);
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            })
-            .catch(error => {
-                alert("GAGAL MENYIMPAN:\n" + error.message);
-                console.error("Error simpan profil:", error);
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            });
+            try {
+                const payload = { no_whatsapp: wa, bank_name: bank, bank_number: num };
+                const res = await fetch(`${SUPABASE_URL}/master_kader?nik=eq.${currentUser.nik}`, {
+                    method: 'PATCH', headers: headersConfig, body: JSON.stringify(payload)
+                });
+                
+                if(res.ok) {
+                    showToast("Profil berhasil disimpan!"); 
+                    toggleModal('profileModal', false);
+                    loadUserProfile(); // Refresh data
+                } else { throw new Error("Gagal update"); }
+            } catch(e) {
+                alert("GAGAL MENYIMPAN:\n" + e.message);
+            } finally {
+                btn.innerHTML = originalText; btn.disabled = false;
+            }
         }
 
         function openProfile() { toggleModal('profileModal', true); }
 
-        function loadSubmissions() {
-            db.collection("submissions").where("userId", "==", currentUser.uid).onSnapshot(snap => {
-                  const list = document.getElementById('submissionsList'); list.innerHTML = "";
-                  if(snap.empty) { list.innerHTML = "<p style='text-align:center; color:#ccc; margin-top:20px;'>Belum ada karya.</p>"; return; }
-                  
-                  let dataList = []; snap.forEach(doc => dataList.push({ id: doc.id, ...doc.data() }));
-                  dataList.sort((a, b) => { let tA = a.createdAt ? a.createdAt.seconds : 0; let tB = b.createdAt ? b.createdAt.seconds : 0; return tB - tA; });
-
-                  dataList.forEach(d => {
-                      let icon = 'fa-link'; let bg = '#333';
-                      if(d.platform == 'facebook') { icon = 'fa-facebook-f'; bg = '#1877F2'; } if(d.platform == 'tiktok') { icon = 'fa-tiktok'; bg = '#000'; }
-                      if(d.platform == 'instagram') { icon = 'fa-instagram'; bg = 'linear-gradient(45deg, #f09433, #bc1888)'; } if(d.platform == 'youtube') { icon = 'fa-youtube'; bg = '#FF0000'; }
-                      
-                      let badge = `<span class="status-badge badge-pending">Menunggu</span>`; let reevalBtn = '';
-                      if(d.status == 'approved') { 
-                          badge = `<span class="status-badge badge-approved">+${d.pointsAwarded} Poin</span>`; 
-                          reevalBtn = `<div style="margin-top:10px; padding-top:8px; border-top:1px dashed #eee; text-align:right;"><span onclick="triggerReeval('${d.id}')" style="color:var(--primary); font-size:0.75rem; font-weight:600; cursor:pointer; padding:5px 10px; background:#E8F5E9; border-radius:20px;"><i class="fas fa-sync-alt"></i> Ajukan Nilai Ulang</span></div>`;
-                      } else if(d.status == 'rejected') { 
-                          badge = `<span class="status-badge badge-rejected">Ditolak</span>`; 
-                          reevalBtn = `<div style="margin-top:10px; padding-top:8px; border-top:1px dashed #eee; text-align:right;"><span onclick="triggerReeval('${d.id}')" style="color:var(--danger); font-size:0.75rem; font-weight:600; cursor:pointer; padding:5px 10px; background:#FFEBEE; border-radius:20px;"><i class="fas fa-sync-alt"></i> Ajukan Banding</span></div>`;
-                      }
-
-                      let validLink = d.link;
-                      if (!validLink.match(/^https?:\/\//i)) { validLink = 'https://' + validLink; }
-
-                      list.innerHTML += `
-                        <div class="content-card">
-                            <div class="platform-icon" style="background:${bg}"><i class="fab ${icon}"></i></div>
-                            <div style="flex-grow:1; overflow:hidden;">
-                                ${badge}
-                                <div style="font-weight:600; font-size:0.9rem; margin-bottom:5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                                    <a href="${validLink}" target="_blank" style="color:#1976D2; text-decoration:none;"><i class="fas fa-external-link-alt"></i> Buka Link Postingan</a>
-                                </div>
-                                <div style="font-size:0.75rem; color:#888;">${d.createdAt ? new Date(d.createdAt.seconds * 1000).toLocaleDateString() : 'Baru saja'}</div>
-                                ${reevalBtn}
-                            </div>
-                        </div>`;
-                  });
-              });
+        async function loadLeaderboard() {
+            try {
+                const res = await fetch(`${SUPABASE_URL}/master_kader?order=creative_balance.desc&limit=7&select=nama_kader,creative_balance`, { headers: headersConfig });
+                const data = await res.json();
+                
+                const list = document.getElementById("leaderboardList"); list.innerHTML = ""; let rank = 1;
+                data.forEach(u => {
+                    let rankClass = ""; let icon = `#${rank}`;
+                    if(rank === 1) { rankClass = "rank-1"; icon = "👑"; } if(rank === 2) { rankClass = "rank-2"; icon = "🥈"; } if(rank === 3) { rankClass = "rank-3"; icon = "🥉"; }
+                    let name = u.nama_kader || 'Anonim'; let ava = defaultAvatar + name;
+                    list.innerHTML += `<div class="leaderboard-card ${rankClass}"><div class="rank-num">${icon}</div><img src="${ava}" class="lb-avatar"><div class="lb-info"><div class="lb-name">${name}</div></div><div class="lb-points">${u.creative_balance || 0} Poin</div></div>`;
+                    rank++;
+                });
+            } catch(e) { console.error("Gagal load leaderboard", e); }
         }
 
-        function loadWDHistory() {
-            db.collection("withdrawals").where("userId", "==", currentUser.uid).onSnapshot(snap => {
-                  const list = document.getElementById('wdHistoryList'); list.innerHTML = "";
-                  if(snap.empty) { list.innerHTML = "<p style='text-align:center; color:#ccc; margin-top:20px;'>Belum ada penarikan.</p>"; return; }
-                  let dataList = []; snap.forEach(doc => dataList.push({ id: doc.id, ...doc.data() }));
-                  dataList.sort((a, b) => { let tA = a.requestedAt ? a.requestedAt.seconds : 0; let tB = b.requestedAt ? b.requestedAt.seconds : 0; return tB - tA; });
-                  dataList.forEach(d => {
-                      let statusText = d.status == 'completed' ? `<span style="color:green; font-weight:bold;">Selesai</span>` : `<span style="color:#FF9800; font-weight:bold;">Diproses</span>`;
-                      list.innerHTML += `<div class="content-card" style="align-items:center;"><div style="background:#eee; padding:10px; border-radius:12px;"><i class="fas fa-wallet" style="color:var(--primary); font-size:1.5rem;"></i></div><div style="flex-grow:1;"><div style="font-weight:bold; font-size:1rem;">- ${d.amount} Poin</div><div style="font-size:0.8rem; color:#666;">${d.bankDetails}</div><div style="font-size:0.75rem; color:#aaa;">${d.requestedAt ? new Date(d.requestedAt.seconds * 1000).toLocaleDateString() : ''}</div></div><div>${statusText}</div></div>`;
-                  });
-              });
+        async function loadSubmissions() {
+            try {
+                const res = await fetch(`${SUPABASE_URL}/submissions?user_nik=eq.${currentUser.nik}&order=created_at.desc`, { headers: headersConfig });
+                const dataList = await res.json();
+                
+                const list = document.getElementById('submissionsList'); list.innerHTML = "";
+                if(dataList.length === 0) { list.innerHTML = "<p style='text-align:center; color:#ccc; margin-top:20px;'>Belum ada karya.</p>"; return; }
+
+                dataList.forEach(d => {
+                    let icon = 'fa-link'; let bg = '#333';
+                    if(d.platform == 'facebook') { icon = 'fa-facebook-f'; bg = '#1877F2'; } if(d.platform == 'tiktok') { icon = 'fa-tiktok'; bg = '#000'; }
+                    if(d.platform == 'instagram') { icon = 'fa-instagram'; bg = 'linear-gradient(45deg, #f09433, #bc1888)'; } if(d.platform == 'youtube') { icon = 'fa-youtube'; bg = '#FF0000'; }
+                    
+                    let badge = `<span class="status-badge badge-pending">Menunggu</span>`; let reevalBtn = '';
+                    if(d.status == 'approved') { 
+                        badge = `<span class="status-badge badge-approved">+${d.points_awarded} Poin</span>`; 
+                        reevalBtn = `<div style="margin-top:10px; padding-top:8px; border-top:1px dashed #eee; text-align:right;"><span onclick="triggerReeval('${d.id}')" style="color:var(--primary); font-size:0.75rem; font-weight:600; cursor:pointer; padding:5px 10px; background:#E8F5E9; border-radius:20px;"><i class="fas fa-sync-alt"></i> Ajukan Nilai Ulang</span></div>`;
+                    } else if(d.status == 'rejected') { 
+                        badge = `<span class="status-badge badge-rejected">Ditolak</span>`; 
+                        reevalBtn = `<div style="margin-top:10px; padding-top:8px; border-top:1px dashed #eee; text-align:right;"><span onclick="triggerReeval('${d.id}')" style="color:var(--danger); font-size:0.75rem; font-weight:600; cursor:pointer; padding:5px 10px; background:#FFEBEE; border-radius:20px;"><i class="fas fa-sync-alt"></i> Ajukan Banding</span></div>`;
+                    }
+
+                    let validLink = d.link;
+                    if (!validLink.match(/^https?:\/\//i)) { validLink = 'https://' + validLink; }
+
+                    list.innerHTML += `
+                    <div class="content-card">
+                        <div class="platform-icon" style="background:${bg}"><i class="fab ${icon}"></i></div>
+                        <div style="flex-grow:1; overflow:hidden;">
+                            ${badge}
+                            <div style="font-weight:600; font-size:0.9rem; margin-bottom:5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                                <a href="${validLink}" target="_blank" style="color:#1976D2; text-decoration:none;"><i class="fas fa-external-link-alt"></i> Buka Link Postingan</a>
+                            </div>
+                            <div style="font-size:0.75rem; color:#888;">${new Date(d.created_at).toLocaleDateString()}</div>
+                            ${reevalBtn}
+                        </div>
+                    </div>`;
+                });
+            } catch(e) { console.error("Load karya gagal", e); }
+        }
+
+        async function loadWDHistory() {
+            try {
+                const res = await fetch(`${SUPABASE_URL}/withdrawals?user_nik=eq.${currentUser.nik}&order=requested_at.desc`, { headers: headersConfig });
+                const dataList = await res.json();
+                
+                const list = document.getElementById('wdHistoryList'); list.innerHTML = "";
+                if(dataList.length === 0) { list.innerHTML = "<p style='text-align:center; color:#ccc; margin-top:20px;'>Belum ada penarikan.</p>"; return; }
+                
+                dataList.forEach(d => {
+                    let statusText = d.status == 'completed' ? `<span style="color:green; font-weight:bold;">Selesai</span>` : `<span style="color:#FF9800; font-weight:bold;">Diproses</span>`;
+                    list.innerHTML += `<div class="content-card" style="align-items:center;"><div style="background:#eee; padding:10px; border-radius:12px;"><i class="fas fa-wallet" style="color:var(--primary); font-size:1.5rem;"></i></div><div style="flex-grow:1;"><div style="font-weight:bold; font-size:1rem;">- ${d.amount} Poin</div><div style="font-size:0.8rem; color:#666;">${d.bank_details}</div><div style="font-size:0.75rem; color:#aaa;">${new Date(d.requested_at).toLocaleDateString()}</div></div><div>${statusText}</div></div>`;
+                });
+            } catch(e) { console.error("Load WD gagal", e); }
         }
 
         function switchView(tab) {
             document.getElementById('tabKarya').classList.remove('active'); document.getElementById('tabWd').classList.remove('active');
             document.getElementById('submissionsList').classList.add('hidden'); document.getElementById('wdHistoryList').classList.add('hidden');
-            if(tab === 'karya') { document.getElementById('tabKarya').classList.add('active'); document.getElementById('submissionsList').classList.remove('hidden'); }
-            if(tab === 'wd') { document.getElementById('tabWd').classList.add('active'); document.getElementById('wdHistoryList').classList.remove('hidden'); }
+            if(tab === 'karya') { document.getElementById('tabKarya').classList.add('active'); document.getElementById('submissionsList').classList.remove('hidden'); loadSubmissions(); }
+            if(tab === 'wd') { document.getElementById('tabWd').classList.add('active'); document.getElementById('wdHistoryList').classList.remove('hidden'); loadWDHistory(); }
         }
 
-        function submitKarya() {
-            let link = document.getElementById('inputLink').value.trim(); const platform = document.getElementById('inputPlatform').value;
+        async function submitKarya() {
+            let link = document.getElementById('inputLink').value.trim(); 
+            const platform = document.getElementById('inputPlatform').value;
             if(!link) return showToast("Link tidak boleh kosong!");
-            
             if (!link.match(/^https?:\/\//i)) { link = 'https://' + link; }
 
             document.getElementById('loadingScreen').style.display = 'flex';
             
-            db.collection("submissions").where("link", "==", link).get().then((snap) => {
-                if(!snap.empty) {
+            try {
+                // Cek link duplikat
+                const cekRes = await fetch(`${SUPABASE_URL}/submissions?link=eq.${link}`, { headers: headersConfig });
+                const cekData = await cekRes.json();
+                
+                if(cekData.length > 0) {
                     document.getElementById('loadingScreen').style.display = 'none';
-                    showDialog("Ditolak", "Link konten ini sudah pernah Anda atau orang lain submit sebelumnya!", null, true);
-                } else {
-                    let currentWA = userData.whatsapp || "";
-                    db.collection("submissions").add({ userId: currentUser.uid, userName: userData.name || currentUser.displayName, userWa: currentWA, platform: platform, link: link, status: "pending", createdAt: firebase.firestore.FieldValue.serverTimestamp(), pointsAwarded: 0 })
-                    .then(() => { 
-                        document.getElementById('loadingScreen').style.display = 'none';
-                        showToast("Karya terkirim!"); toggleModal('submitModal', false); document.getElementById('inputLink').value = ""; 
-                    });
+                    return showDialog("Ditolak", "Link konten ini sudah pernah di-submit sebelumnya!", null, true);
                 }
-            }).catch(e => { document.getElementById('loadingScreen').style.display = 'none'; showToast("Error koneksi!"); });
+
+                // Insert ke Supabase
+                const payload = {
+                    user_nik: currentUser.nik,
+                    user_name: currentUser.nama_kader,
+                    platform: platform,
+                    link: link,
+                    status: "pending",
+                    points_awarded: 0,
+                    is_reval: false
+                };
+
+                const res = await fetch(`${SUPABASE_URL}/submissions`, {
+                    method: 'POST', headers: headersConfig, body: JSON.stringify(payload)
+                });
+
+                if(res.ok) {
+                    document.getElementById('loadingScreen').style.display = 'none';
+                    showToast("Karya terkirim!"); toggleModal('submitModal', false); 
+                    document.getElementById('inputLink').value = ""; 
+                    loadSubmissions(); // Refresh daftar
+                } else { throw new Error("Gagal insert"); }
+
+            } catch(e) {
+                document.getElementById('loadingScreen').style.display = 'none'; showToast("Error koneksi!"); 
+            }
         }
 
-        function triggerReeval(docId) { showDialog("Penilaian Ulang", "Apakah views/likes karya ini bertambah drastis? Ajukan penilaian ulang ke Kurator?", () => { db.collection("submissions").doc(docId).update({ status: "pending", isReval: true, revalRequestedAt: firebase.firestore.FieldValue.serverTimestamp() }).then(() => { showToast("Pengajuan ulang terkirim!"); }); }); }
+        function triggerReeval(docId) { 
+            showDialog("Penilaian Ulang", "Apakah views/likes karya ini bertambah drastis? Ajukan penilaian ulang ke Kurator?", async () => { 
+                try {
+                    await fetch(`${SUPABASE_URL}/submissions?id=eq.${docId}`, {
+                        method: 'PATCH', headers: headersConfig, body: JSON.stringify({ status: "pending", is_reval: true })
+                    });
+                    showToast("Pengajuan ulang terkirim!");
+                    loadSubmissions();
+                } catch(e) { showToast("Gagal update data."); }
+            }); 
+        }
         
         function requestRedeemCheck() { 
-            if(!userData.nik || !userData.bankNumber) { showToast("Mohon lengkapi profil dulu!"); openProfile(); return; } 
-            document.getElementById('redeemTarget').innerText = `${userData.bankName} - ${userData.bankNumber}`; toggleModal('redeemModal', true); 
+            if(!currentUser.bank_name || !currentUser.bank_number) { showToast("Mohon lengkapi Bank Rekening di Profil!"); openProfile(); return; } 
+            document.getElementById('redeemTarget').innerText = `${currentUser.bank_name} - ${currentUser.bank_number}`; 
+            toggleModal('redeemModal', true); 
         }
         
-        function processRedeem() {
-            const amount = parseInt(document.getElementById('redeemAmount').value); if(amount < 150) return showToast("Minimal 150 Poin!"); if(amount > currentPoints) return showToast("Saldo tidak cukup!");
-            db.collection("users").doc(currentUser.uid).update({ balance: firebase.firestore.FieldValue.increment(-amount) });
-            db.collection("withdrawals").add({ userId: currentUser.uid, userName: userData.name, userNik: userData.nik, userWa: userData.whatsapp, amount: amount, bankDetails: `${userData.bankName} - ${userData.bankNumber}`, status: "pending", requestedAt: firebase.firestore.FieldValue.serverTimestamp() })
-            .then(() => { showToast("Permintaan diajukan!"); toggleModal('redeemModal', false); switchView('wd'); });
+        async function processRedeem() {
+            const amount = parseInt(document.getElementById('redeemAmount').value); 
+            if(amount < 150) return showToast("Minimal 150 Poin!"); 
+            if(amount > (currentUser.creative_balance || 0)) return showToast("Saldo tidak cukup!");
+            
+            document.getElementById('loadingScreen').style.display = 'flex';
+
+            try {
+                // 1. Kurangi Saldo di master_kader
+                let newBalance = (currentUser.creative_balance || 0) - amount;
+                await fetch(`${SUPABASE_URL}/master_kader?nik=eq.${currentUser.nik}`, {
+                    method: 'PATCH', headers: headersConfig, body: JSON.stringify({ creative_balance: newBalance })
+                });
+
+                // 2. Catat di tabel withdrawals
+                const payload = {
+                    user_nik: currentUser.nik,
+                    user_name: currentUser.nama_kader,
+                    amount: amount,
+                    bank_details: `${currentUser.bank_name} - ${currentUser.bank_number}`,
+                    status: "pending"
+                };
+                await fetch(`${SUPABASE_URL}/withdrawals`, {
+                    method: 'POST', headers: headersConfig, body: JSON.stringify(payload)
+                });
+
+                document.getElementById('loadingScreen').style.display = 'none';
+                showToast("Permintaan diajukan!"); toggleModal('redeemModal', false); 
+                loadUserProfile(); // Refresh saldo
+                switchView('wd');
+            } catch(e) {
+                document.getElementById('loadingScreen').style.display = 'none';
+                showToast("Gagal mengajukan penarikan.");
+            }
         }
 
-        function checkPendingConfirmations() { db.collection("withdrawals").where("userId", "==", currentUser.uid).where("status", "==", "transferred").onSnapshot(snap => { if(!snap.empty) { const doc = snap.docs[0]; pendingWithdrawalId = doc.id; document.getElementById('confirmBank').innerText = doc.data().bankDetails; document.getElementById('profileNotif').style.display = 'block'; toggleModal('confirmModal', true); } else { document.getElementById('profileNotif').style.display = 'none'; } }); }
-        function confirmReceipt() { if(!pendingWithdrawalId) return; db.collection("withdrawals").doc(pendingWithdrawalId).update({ status: "completed", completedAt: firebase.firestore.FieldValue.serverTimestamp() }).then(() => { showToast("Selesai. Terima kasih!"); toggleModal('confirmModal', false); switchView('wd'); }); }
+        async function checkPendingConfirmations() { 
+            try {
+                const res = await fetch(`${SUPABASE_URL}/withdrawals?user_nik=eq.${currentUser.nik}&status=eq.transferred`, { headers: headersConfig });
+                const data = await res.json();
+                if(data.length > 0) { 
+                    pendingWithdrawalId = data[0].id; 
+                    document.getElementById('confirmBank').innerText = data[0].bank_details; 
+                    document.getElementById('profileNotif').style.display = 'block'; 
+                    toggleModal('confirmModal', true); 
+                } else { 
+                    document.getElementById('profileNotif').style.display = 'none'; 
+                } 
+            } catch(e){}
+        }
+
+        async function confirmReceipt() { 
+            if(!pendingWithdrawalId) return; 
+            try {
+                await fetch(`${SUPABASE_URL}/withdrawals?id=eq.${pendingWithdrawalId}`, {
+                    method: 'PATCH', headers: headersConfig, body: JSON.stringify({ status: "completed" })
+                });
+                showToast("Selesai. Terima kasih!"); toggleModal('confirmModal', false); loadWDHistory(); 
+            } catch(e){ showToast("Gagal mengonfirmasi."); }
+        }
 
         function toggleModal(id, show) { document.getElementById(id).style.display = show ? 'flex' : 'none'; }
         function showToast(msg) { const t = document.getElementById('gclToast'); document.getElementById('toastMsg').innerText = msg; t.classList.add('active'); setTimeout(() => t.classList.remove('active'), 3000); }
@@ -510,7 +634,6 @@
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('PWA ServiceWorker terdaftar!', reg.scope))
                     .catch(err => console.log('PWA gagal didaftarkan:', err));
             });
         }
